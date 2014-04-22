@@ -1,0 +1,29 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.StatusBar"
+	x:Name="UserControl"
+	d:DesignWidth="1264" d:DesignHeight="33.201">
+	<UserControl.Resources>
+		<Storyboard x:Key="OnExpanded1"/>
+		<Storyboard x:Key="OnCollapsed"/>
+	</UserControl.Resources>
+
+	<Grid x:Name="Statusbar" Margin="0">
+		<Grid.Background>
+			<SolidColorBrush Color="{DynamicResource StatusGood}"/>
+		</Grid.Background>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="0.17*"/>
+			<ColumnDefinition Width="0.446*"/>
+			<ColumnDefinition Width="0.384*"/>
+		</Grid.ColumnDefinitions>
+		<TextBlock Margin="10,0,10,4" x:Name="statusText" TextWrapping="Wrap" Height="21.007" VerticalAlignment="Bottom" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis">
+			<TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Not Connected"/></TextBlock>
+	</Grid>
+</UserControl>

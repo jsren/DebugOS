@@ -1,0 +1,22 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.RegisterControl"
+	x:Name="UserControl"
+	d:DesignWidth="182.993" d:DesignHeight="24.333">
+
+	<Border Margin="3,0,0,0" d:LayoutOverrides="Width" BorderThickness="1" >
+
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" MinWidth="32.133"/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<TextBlock HorizontalAlignment="Center" x:Name="valueText" Margin="4,0" VerticalAlignment="Center" Foreground="{DynamicResource Text}" Grid.Column="1" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"><Run Language="en-gb" Text=""/></TextBlock>
+			<TextBlock Margin="8,2,2,2" x:Name="nameText" TextWrapping="Wrap" Foreground="#FF414141" VerticalAlignment="Center" FontWeight="Bold" HorizontalAlignment="Left"><Run Language="en-gb" Text="N/A"/></TextBlock>
+		</Grid>
+	</Border>
+</UserControl>

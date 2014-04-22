@@ -1,0 +1,21 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.HexSearchBox"
+	x:Name="UserControl"
+	d:DesignWidth="227" d:DesignHeight="32">
+
+	<Grid>
+		<Border BorderThickness="1,1,1,3" BorderBrush="#FFB2B2B2">
+			<Rectangle Fill="#FFE4E4E4"/>
+		</Border>
+		<Grid Margin="46.667,0,8.333,3" ClipToBounds="True" Height="21">
+			<TextBox x:Name="searchText" TextWrapping="Wrap" BorderBrush="{x:Null}" Foreground="#FF646464" Margin="-2" Padding="3" TextChanged="OnTextChanged"/>
+			<TextBlock x:Name="promptLabel" HorizontalAlignment="Left" Margin="4.958,2.895,0,2.145" TextWrapping="Wrap" d:LayoutOverrides="Height" Foreground="#FFA3A3A3" IsHitTestVisible="False" Text="Search"/>
+		</Grid>
+		<Image HorizontalAlignment="Left" Height="17.625" Margin="12.918,0,0,8" Source="/DebugOS;component/Icons/search small.png" Stretch="Fill" VerticalAlignment="Bottom" Width="17.625"/>
+	</Grid>
+</UserControl>

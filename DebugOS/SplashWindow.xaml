@@ -1,0 +1,26 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+	x:Class="DebugOS.SplashWindow"
+	x:Name="Window" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" Background="{x:Null}" AllowsTransparency="True" Topmost="True" Width="592" Height="280">
+
+	<Grid Margin="10">
+
+		<Grid x:Name="background" Margin="0" Background="White">
+			<Grid.Effect>
+				<DropShadowEffect ShadowDepth="0" BlurRadius="10" RenderingBias="Quality"/>
+			</Grid.Effect>
+		</Grid>
+		<Image Margin="1" Source="splash_bg.jpg" x:Name="bgImage" HorizontalAlignment="Right" VerticalAlignment="Top" Stretch="None"/>
+		<Grid x:Name="LayoutRoot" Margin="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="220.97"/>
+			</Grid.ColumnDefinitions>
+			<TextBlock x:Name="productText" HorizontalAlignment="Left" Margin="24,19,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="64" Foreground="#FF646464"><Run Language="en-gb" Text="Debug OS."/></TextBlock>
+			<TextBlock x:Name="progressText" HorizontalAlignment="Left" Height="18" Margin="24,0,0,10" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="268"><Run Language="en-gb" Text="Starting up..."/></TextBlock>
+			<TextBlock x:Name="versionText" HorizontalAlignment="Left" Height="18" Margin="24,104.127,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="140.667" Foreground="#FF494949" Loaded="OnLoaded"><Run Language="en-gb" Text="Version N/A"/></TextBlock>
+		</Grid>
+	</Grid>
+</Window>

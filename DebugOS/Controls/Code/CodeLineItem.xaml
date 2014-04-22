@@ -1,0 +1,31 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.CodeLineItem"
+	x:Name="UserControl"
+	d:DesignWidth="446" d:DesignHeight="86.5">
+
+    <Grid x:Name="LayoutRoot" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="41"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="1">
+            <Grid.Background>
+                <SolidColorBrush Color="#FF6A94BF"/>
+            </Grid.Background>
+            <Rectangle x:Name="currentGrid" Stroke="#FF1D1D1D" Fill="#51DEDEDE" StrokeThickness="3"/>
+            <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Content="function(var a, var b) { }"/>
+        </Grid>
+        <Ellipse x:Name="breakpoint" Fill="#51DEDEDE" HorizontalAlignment="Center" Height="18" Margin="0,4,0,0" Stroke="#FF787878" VerticalAlignment="Top" Width="18" ToolTip="Breakpoint" MouseLeftButtonUp="OnBreakpointClick"/>
+        <Ellipse x:Name="breakpoint_fill" Fill="#7FFF0000" HorizontalAlignment="Center" Height="18" Margin="11.5,4,11.5,0" Stroke="Red" VerticalAlignment="Top" Width="18" ToolTip="Breakpoint" MouseLeftButtonUp="OnBreakpointClick" Visibility="Collapsed"/>
+        <StackPanel x:Name="childrenStack" Grid.Column="1" Margin="30,0,0,0" VerticalAlignment="Top" Grid.Row="1"/>
+    </Grid>
+</UserControl>
