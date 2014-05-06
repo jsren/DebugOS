@@ -17,16 +17,9 @@ namespace DebugOS
 		{
 			this.InitializeComponent();
             this.ShowAssembly = true;
-
-            // Finish here if we have no debugger
-            if (App.Debugger == null) return;
-
-            // Subscribe to debugger events
-            App.Debugger.BreakpointHit += (s, e) => this.UpdateStep();
-            App.Debugger.Stepped       += (s, e) => this.UpdateStep();
-            App.Debugger.Continued     += (s, e) => this.OnContinued();
 		}
-        public CodeView(CodeUnit codeUnit) : this() {
+        public CodeView(CodeUnit codeUnit) : this()
+        {
             this.CodeUnit = codeUnit;
         }
 
@@ -63,7 +56,7 @@ namespace DebugOS
         /// <summary>
         /// Performs a UI update following a step.
         /// </summary>
-        private void UpdateStep()
+        internal void UpdateStep()
         {
             Dispatcher.Invoke((Action)delegate
             {
@@ -102,7 +95,7 @@ namespace DebugOS
             });
         }
 
-        private void OnContinued()
+        internal void OnContinued()
         {
             Dispatcher.Invoke((Action)delegate {
                 this.statusText.Text = "";
@@ -132,6 +125,18 @@ namespace DebugOS
         private void OnShowAsmChanged(object sender, System.Windows.RoutedEventArgs e)
         {
             this.ShowAssembly = this.asmCheck.IsChecked.Value;
+        }
+
+        private void OnMouseDownTitle(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (this.optionsGrid.Visibility == System.Windows.Visibility.Visible)
+            {
+                this.optionsGrid.Visibility = System.Windows.Visibility.Collapsed;
+            }
+            else
+            {
+                this.optionsGrid.Visibility = System.Windows.Visibility.Visible;
+            }
         }
 	}
 }

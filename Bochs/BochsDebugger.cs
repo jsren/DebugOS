@@ -6,6 +6,7 @@ using System.Diagnostics;
 using DebugOS;
 
 using Path = System.IO.Path;
+using System.Threading.Tasks;
 
 namespace DebugOS.Bochs
 {
@@ -92,8 +93,9 @@ namespace DebugOS.Bochs
         public void WriteRegister(Register register, byte[] data) {
             throw new NotImplementedException();
         }
-        public byte[] ReadMemory(Address address, int length) {
-            return this.connector.readMemory(address, length);
+
+        public void BeginReadMemory(Address address, int length, Action<UInt32[]> callback) {
+            this.connector.BeginReadMemory(address, length, callback);
         }
         public void WriteMemory(Address address, byte[] data) {
             throw new NotImplementedException();

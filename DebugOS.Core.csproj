@@ -30,6 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -38,7 +39,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -50,7 +51,11 @@
   <ItemGroup>
     <Compile Include="Bochs\BochsConnector.cs" />
     <Compile Include="Bochs\BochsDebugger.cs" />
+    <Compile Include="Bochs\IBochsRequest.cs" />
+    <Compile Include="Bochs\Requests\ReadMemoryRequest.cs" />
     <Compile Include="Exceptions\DebuggerNotPausedException.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="ExtensionLoader.cs" />
     <Compile Include="Objdump\CodeUnitLoader.cs" />
     <Compile Include="Objdump\ObjectFileLoader.cs" />
     <Compile Include="Objdump\SectionsLoader.cs" />

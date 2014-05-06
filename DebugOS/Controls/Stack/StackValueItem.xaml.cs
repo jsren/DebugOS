@@ -23,10 +23,25 @@ namespace DebugOS.Controls
     {
         private ulong longValue;
 
-        public StackValueItem()
+        public StackValueItem(UInt32 value)
         {
             InitializeComponent();
             this.IsReturnAddress = false;
+
+            string stringValue = Utils.GetHexString(value, App.Debugger.AddressWidth * 2);
+
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < stringValue.Length; i += 2)
+            {
+                builder.Append(stringValue[i]);
+                builder.Append(stringValue[i + 1]);
+
+                if (i + 2 < stringValue.Length)
+                {
+                    builder.Append(' ');
+                }
+            }
+            this.value.Text = builder.ToString();
         }
 
         public bool IsReturnAddress
@@ -34,28 +49,5 @@ namespace DebugOS.Controls
             get { return this.returnIndicator.Visibility == Visibility.Visible; }
             set { this.returnIndicator.Visibility = (value ? Visibility.Visible : Visibility.Collapsed); }
         }
-
-        public ulong Value
-        {
-            get { return this.longValue; }
-
-            set
-            {
-                this.longValue = value;
-                string stringValue = Utils.GetHexString(value, App.Debugger.AddressWidth * 2);
-
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < stringValue.Length; i+=2)
-                {
-                    builder.Append(stringValue[i], stringValue[i + 1]);
-
-                    if (i + 2 < stringValue.Length) { 
-                        builder.Append(' ');
-                    }
-                }
-                this.value.Text = builder.ToString();
-            }
-        }
-
     }
 }

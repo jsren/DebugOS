@@ -19,83 +19,79 @@ namespace DebugOS.Controls.Stack
     /// </summary>
     public partial class StackViewer : UserControl
     {
+        private byte[] BP;
+        private byte[] SP;
+
         public StackViewer()
         {
             InitializeComponent();
 
-            if (App.Debugger != null) {
-                App.Debugger.Stepped += Debugger_Stepped;
+            App.DebuggerRegistered += OnDebuggerRegistered;
+        }
+
+        void OnDebuggerRegistered()
+        {
+            if (App.Debugger.CanReadMemory)
+            {
+                App.Debugger.RefreshRegister += OnRegisterUpdate;
+                App.Debugger.Stepped         += Debugger_Stepped;
+            }
+        }
+
+        void OnRegisterUpdate(object sender, RegisterUpdateEventArgs e)
+        {
+            if (BP != null && SP != null)
+            {
+                this.requestUpdate();
+                BP = SP = null;
+            }
+            else if (e.Register.Type == RegisterType.BasePointer) {
+                BP = e.Value;
+            }
+            else if (e.Register.Type == RegisterType.StackPointer) {
+                SP = e.Value;
             }
         }
 
         void Debugger_Stepped(object sender, SteppedEventArgs e)
         {
-            // == Refresh ==
+            BP = SP = null;
             this.Dispatcher.Invoke((Action)delegate() { this.stack.Children.Clear(); });
+        }
 
-            if (!App.Debugger.CanReadMemory) return;
 
-            // Get Base Pointer:
-            Register? bp = null, sp = null;
+        void requestUpdate()
+        {
+            ulong bpValue, spValue;
 
-            foreach (Register reg in App.Debugger.AvailableRegisters)
+            if (BP.Length == 4)
             {
-                if (reg.Type == RegisterType.BasePointer)
-                {
-                    bp = reg;
-                }
-                else if (reg.Type == RegisterType.StackPointer)
-                {
-                    sp = reg;
-                }
+                bpValue = (uint)Utils.IntFromBytes(BP);
+                spValue = (uint)Utils.IntFromBytes(SP);
             }
-
-            // Pointers not available - just quit
-            if (bp == null || sp == null) return;
-
-            byte[] bpBytes = App.Debugger.ReadRegister(bp.Value);
-            byte[] spBytes = App.Debugger.ReadRegister(sp.Value);
-
-            long bpValue, spValue;
-
-            if (bpBytes.Length == 4)
+            else if (BP.Length == 8)
             {
-                bpValue = Utils.IntFromBytes(bpBytes);
-                spValue = Utils.IntFromBytes(spBytes);
-            }
-            else if (bpBytes.Length == 8)
-            {
-                bpValue = Utils.LongFromBytes(bpBytes);
-                spValue = Utils.LongFromBytes(spBytes);
+                bpValue = (ulong)Utils.LongFromBytes(BP);
+                spValue = (ulong)Utils.LongFromBytes(SP);
             }
             else return; // Invalid register size - cannot compute
 
-            int diff = (int)Math.Max((ulong)bpValue - (ulong)spValue, 20);
+            int diff = Math.Max(Math.Max((int)(bpValue - spValue), 20), 96);
 
             // Read stack data
 #warning Must be logical address from SS
-            byte[] data = App.Debugger.ReadMemory(new Address(AddressType.Linear, spValue), diff);
-
-            this.Dispatcher.Invoke((Action)delegate()
+            App.Debugger.BeginReadMemory(new Address(AddressType.Linear, (long)spValue), diff, (UInt32[] data) =>
             {
-                if (App.Debugger.AddressWidth == 4)
+                this.Dispatcher.Invoke((Action)delegate()
                 {
-                    byte[] buffer = new byte[4];
-                    for (int i = 0; i < data.Length; i += 4)
+                    if (App.Debugger.AddressWidth == 4)
                     {
-                        Array.Copy(data, i, buffer, 0, 4);
-                        this.stack.Children.Add(new StackValueItem() { Value = (ulong)Utils.IntFromBytes(buffer) });
+                        for (int i = 0; i < data.Length; i++)
+                        {
+                            this.stack.Children.Add(new StackValueItem(data[i]) { IsReturnAddress = (i == 0) });
+                        }
                     }
-                }
-                else if (App.Debugger.AddressWidth == 8)
-                {
-                    byte[] buffer = new byte[8];
-                    for (int i = 0; i < data.Length; i += 8)
-                    {
-                        Array.Copy(data, i, buffer, 0, 8);
-                        this.stack.Children.Add(new StackValueItem() { Value = (ulong)Utils.LongFromBytes(buffer) });
-                    }
-                }
+                });
             });
         }
     }

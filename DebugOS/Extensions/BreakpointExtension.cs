@@ -5,8 +5,9 @@ using System.Text;
 
 namespace DebugOS.Extensions
 {
-    class BreakpointExtension : IDebugExtension
+    class BreakpointExtension : IUIExtension
     {
+        private IDebugUI UI;
 
         public string Name { get { return "Breakpoint UI"; } }
 
@@ -14,8 +15,16 @@ namespace DebugOS.Extensions
             return;
         }
 
-        public void SetupUI(IDebugUI UI, IDebugger debugger)
+        public void SetupUI(IDebugUI UI)
         {
+            this.UI = UI;
+            App.DebuggerRegistered += OnDebuggerRegistered;
+        }
+
+        void OnDebuggerRegistered()
+        {
+            var debugger = App.Debugger;
+
             var panel = UI.NewToolbarPanel();
             panel.Title = "Breakpoints";
 
@@ -24,7 +33,7 @@ namespace DebugOS.Extensions
                 clearAllItem.ToolTip = "Clears all breakpoints";
                 clearAllItem.Clicked += (s, e) =>
                 {
-                    foreach (Breakpoint bp in debugger.Breakpoints)
+                    foreach (Breakpoint bp in App.Debugger.Breakpoints)
                     {
                         bp.IsActive = false;
                     }
@@ -38,7 +47,7 @@ namespace DebugOS.Extensions
 
                 cpuModeToggleItem.Clicked  += (s, e) =>
                 {
-                    Bochs.BochsDebugger bdb  = (Bochs.BochsDebugger)debugger;
+                    Bochs.BochsDebugger bdb  = (Bochs.BochsDebugger)App.Debugger;
                     bdb.BreakOnCPUModeChange = !bdb.BreakOnCPUModeChange;
                 };
             }

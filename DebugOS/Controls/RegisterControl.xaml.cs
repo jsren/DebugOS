@@ -34,7 +34,7 @@ namespace DebugOS
         {
             StringBuilder text = new StringBuilder();
 
-            for (int i = 0; i < value.Length; i++)
+            for (int i = value.Length - 1; i != -1; i--)
             {
                 text.Append(Utils.GetHexString(value[i], 2));
                 text.Append(' ');

@@ -19,10 +19,10 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="1">
             <Grid.Background>
-                <SolidColorBrush Color="#FF6A94BF"/>
+                <SolidColorBrush Color="#006A94BF"/>
             </Grid.Background>
             <Rectangle x:Name="currentGrid" Stroke="#FF1D1D1D" Fill="#51DEDEDE" StrokeThickness="3"/>
-            <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Content="function(var a, var b) { }"/>
+            <TextBlock x:Name="codeText" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Text="function(var a, var b) { }" Foreground="#7F000000" FontFamily="Consolas"/>
         </Grid>
         <Ellipse x:Name="breakpoint" Fill="#51DEDEDE" HorizontalAlignment="Center" Height="18" Margin="0,4,0,0" Stroke="#FF787878" VerticalAlignment="Top" Width="18" ToolTip="Breakpoint" MouseLeftButtonUp="OnBreakpointClick"/>
         <Ellipse x:Name="breakpoint_fill" Fill="#7FFF0000" HorizontalAlignment="Center" Height="18" Margin="11.5,4,11.5,0" Stroke="Red" VerticalAlignment="Top" Width="18" ToolTip="Breakpoint" MouseLeftButtonUp="OnBreakpointClick" Visibility="Collapsed"/>

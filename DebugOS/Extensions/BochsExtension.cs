@@ -1,54 +1,84 @@
-﻿using DebugOS.Loaders;
-using System;
+﻿using System;
+using Microsoft.Win32;
+
+using DebugOS.Bochs;
 
 namespace DebugOS.Extensions
 {
-    public class BochsExtension : IDebugExtension
+    public class BochsExtension : IUIExtension, IDebuggerExtension
     {
-        public void SetupUI(IDebugUI UI, IDebugger debugger) {
+        public void SetupUI(IDebugUI UI) {
             return;
         }
 
         public string Name { get { return "Bochs Debugger"; } }
 
+
+        private string ShowDialog(string title, string filter)
+        {
+            var dialog = new OpenFileDialog()
+            {
+                CheckPathExists = true,
+                Multiselect     = false,
+                Filter          = filter,
+                FilterIndex     = 0
+            };
+
+            bool? result = dialog.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                return dialog.FileName;
+            }
+            else return null;
+        }
+
+        private string configPath;
+        private string bochsPath;
+
+
         public void Initialise(string[] args)
         {
-            // Ignore if debugger already initialised
-            if (App.Debugger != null) return; 
-
             // Check for bochs args
-            if (args.Length < 2 || args[1] != "bochs") return;
-
-            string cfgPath   = null;
-            string bochsPath = null;
-            string objPath   = args[0];
-
-            // Get config file path
-            for (int i = 2; i < args.Length - 1; i++)
+            for (int i = 0; i < args.Length - 1; i++)
             {
                 if (args[i] == "-bxrc") {
-                    cfgPath = args[i + 1];
+                    configPath = args[i + 1];
                 }
                 if (args[i] == "-bxpath") {
                     bochsPath = args[i + 1];
                 }
             }
 
-            if (cfgPath == null)
-                throw new Exception("Config file not specified.");
-
             // If not given, try to get bochs path from env. var
-            bochsPath = bochsPath ?? 
-                System.Environment.GetEnvironmentVariable("BOCHSHOME");
+            bochsPath = bochsPath ?? System.Environment.GetEnvironmentVariable("BOCHSHOME");
 
-            if (bochsPath == null) 
-                throw new Exception("Bochs installation path not specified");
+            // If directory, not file
+            if (System.IO.Directory.Exists(bochsPath))
+            {
+                bochsPath = System.IO.Path.Combine(bochsPath, "bochsdbg.exe");
+            }
+        }
 
-            bochsPath = System.IO.Path.Combine(bochsPath, "bochsdbg.exe");
-
-            App.Debugger = new Bochs.BochsDebugger(bochsPath, cfgPath);
-            var objFile = ObjectFileLoader.Load(objPath, AssemblySyntax.Intel);
-            App.Debugger.IncludeObjectFile(objFile);
+        public IDebugger LoadDebugger()
+        {
+            if (configPath == null)
+            {
+                if ((configPath = ShowDialog("Select Bochs Configuration File", 
+                    "Bochs Configuration File (*.bxrc)|*.bxrc")) == null)
+                {
+                    throw new Exception("Config file not specified.");
+                }
+            }
+            if (bochsPath == null)
+            {
+                if ((bochsPath = ShowDialog("Select Bochs Debug Executable",
+                    "Bochs Executable|bochsdbg.exe")) == null)
+                {
+                    throw new Exception("Bochs installation path not specified.");
+                }
+            }
+            return new BochsDebugger(bochsPath, configPath);
         }
     }
 }

@@ -36,11 +36,8 @@ namespace DebugOS
                 }
             }
 
-            this.contentPresenter.Content = new TextBlock()
-            {
-                Text = line.Text,
-                FontFamily = new FontFamily("Consolas")
-            };
+            // Update the text
+            this.codeText.Text = line.Text;
 			
 			for (int i = 0; i < line.Assembly.Length; i++)
 			{

@@ -16,7 +16,7 @@
             <ColumnDefinition Width="41"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Rectangle Margin="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Fill="#FFC14242"/>
+        <Rectangle Margin="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Fill="#00C14242"/>
         <Grid Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

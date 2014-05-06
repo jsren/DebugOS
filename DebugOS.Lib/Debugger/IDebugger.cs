@@ -19,7 +19,7 @@ namespace DebugOS
         byte[] ReadRegister(Register register);
         void WriteRegister(Register register, byte[] data);
 
-        byte[] ReadMemory(Address address, int length);
+        void BeginReadMemory(Address address, int length, Action<UInt32[]> callback);
         void WriteMemory(Address address, byte[] data);
 
         void IncludeObjectFile(ObjectCodeFile file);

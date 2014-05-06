@@ -24,14 +24,47 @@ namespace DebugOS
             // Allow the titlebar to drag the window
             this.drag = new DragBehaviour(this.titlebar, this);
 
-            // Ensure we have a debugger attached
-            if (App.Debugger == null) return;
+            App.DebuggerRegistered += OnDebuggerRegistered;
+        }
 
+        // When the main window has been loaded
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Add extension UI elements
+            foreach (var extension in App.LoadedExtensions)
+            {
+                App.SplashScreen.Message = "Loading extension " + extension.Name;
+
+                try { extension.SetupUI(this); }
+                catch (Exception x) {
+                    Console.WriteLine("[ERROR] Error loading extension UI: " + x.Message);
+                }
+            }
+
+            // Close splash screen
+            App.SplashScreen.Dispatcher.InvokeShutdown();
+
+            // If we have no debugger, open the debugger selector
+            if (App.Debugger == null)
+            {
+                var dialog = new DebuggerSelector();
+
+                if (dialog.ShowDialog().Value) // Specs say this always has value
+                {
+                    App.ImagePath = dialog.ImagePath;
+                    App.LoadDebugger(dialog.DebuggerName);
+                }
+            }
+        }
+
+        private void OnDebuggerRegistered()
+        {
             // Ensure we have the current code displayed
-            App.Debugger.Stepped += (s, e) => {
-                this.codeView.CodeUnit = App.Debugger.CurrentCodeUnit;
+            App.Debugger.Stepped += (s, e) =>
+            {
+                //this.codeView.CodeUnit = App.Debugger.CurrentCodeUnit;
             };
-            App.Debugger.RefreshRegister += (s, r) => 
+            App.Debugger.RefreshRegister += (s, r) =>
             {
                 this.Dispatcher.Invoke((Action)delegate
                 {
@@ -51,22 +84,6 @@ namespace DebugOS
             };
         }
 
-        // Add extension UI elements
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            foreach (var extension in App.LoadedExtensions)
-            {
-                App.SplashScreen.Message = "Loading extension " + extension.Name;
-
-                try { extension.SetupUI(this, App.Debugger); }
-                catch (Exception x) {
-                    Console.WriteLine("[ERROR] Error loading extension UI: " + x.Message);
-                }
-            }
-
-            // Close splash screen
-            App.SplashScreen.Dispatcher.InvokeShutdown();
-        }
 		
         // Toggles between Maximised and Restored (Normal) window states
 		void toggleWindowState()

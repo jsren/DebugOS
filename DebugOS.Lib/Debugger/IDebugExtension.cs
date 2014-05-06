@@ -1,11 +1,19 @@
 ﻿
 namespace DebugOS
 {
-    public interface IDebugExtension
+    public interface IExtension
     {
         string Name { get; }
-
         void Initialise(string[] args);
-        void SetupUI(IDebugUI UI, IDebugger debugger);
+    }
+
+    public interface IUIExtension : IExtension
+    {
+        void SetupUI(IDebugUI UI);
+    }
+
+    public interface IDebuggerExtension : IExtension
+    {
+        IDebugger LoadDebugger();
     }
 }

@@ -93,36 +93,26 @@
                     </Grid>
                 </Grid>
             </Grid>
-            <TabControl Margin="10,0,0.2,10" Grid.Row="2" TabStripPlacement="Bottom" Background="{x:Null}" BorderBrush="{x:Null}" Padding="0">
-                <TabItem Header="General Purpose">
-                    <Grid>
-                        <Grid x:Name="RegisterView" Margin="0">
-                            <ScrollViewer Margin="0,25,0,0" BorderThickness="0">
-                                <WrapPanel x:Name="registerHost" Orientation="Vertical" VerticalAlignment="Top"/>
-                            </ScrollViewer>
-                            <Grid Height="25" VerticalAlignment="Top">
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <SolidColorBrush Color="{DynamicResource PrimaryColour}"/>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-                                <TextBlock HorizontalAlignment="Left" Margin="8,4,0,2" TextWrapping="Wrap" Width="84">
-                                    <TextBlock.Foreground>
-                                        <SolidColorBrush Color="{DynamicResource PrimaryLabel}"/>
-                                    </TextBlock.Foreground><Run Language="en-gb" Text="Registers"/></TextBlock>
-                                <Rectangle HorizontalAlignment="Right" Height="12" Margin="0,0,7,0" VerticalAlignment="Center" Width="12" ToolTip="Refreshing...">
-                                    <Rectangle.Fill>
-                                        <SolidColorBrush Color="{DynamicResource WarningColour}"/>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Selectors">
-                    <Grid/>
-                </TabItem>
-            </TabControl>
+            <Grid x:Name="RegisterView" Margin="1,0,0,10" Grid.Row="2">
+            	<ScrollViewer Margin="0,25,0,0" BorderThickness="0">
+            		<WrapPanel x:Name="registerHost" Orientation="Vertical" VerticalAlignment="Top"/>
+            	</ScrollViewer>
+            	<Grid Height="25" VerticalAlignment="Top">
+            		<Rectangle>
+            			<Rectangle.Fill>
+            				<SolidColorBrush Color="{DynamicResource PrimaryColour}"/>
+            			</Rectangle.Fill>
+            		</Rectangle>
+            		<TextBlock HorizontalAlignment="Left" Margin="8,4,0,2" TextWrapping="Wrap" Width="84"><TextBlock.Foreground>
+            				<SolidColorBrush Color="{DynamicResource PrimaryLabel}"/>
+            			</TextBlock.Foreground><Run Language="en-gb" Text="Registers"/></TextBlock>
+            		<Rectangle HorizontalAlignment="Right" Height="12" Margin="0,0,7,0" VerticalAlignment="Center" Width="12" ToolTip="Refreshing...">
+            			<Rectangle.Fill>
+            				<SolidColorBrush Color="{DynamicResource WarningColour}"/>
+            			</Rectangle.Fill>
+            		</Rectangle>
+            	</Grid>
+            </Grid>
             <Grid x:Name="MemoryView" Grid.Column="2" Margin="7.84,7,5,23" Grid.Row="1" Grid.RowSpan="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="164*"/>
@@ -152,7 +142,7 @@
                     <Image Source="Icons/packages.png" Margin="3"/>
                 </Button>
             </Grid>
-            <local:CodeView x:Name="codeView" Grid.Column="1" Margin="14.8,10,15.16,23" Grid.Row="1" Grid.RowSpan="2"/>
+            <local:SourceViewer Grid.Column="1" Margin="10,5,5,0" Grid.Row="1" Grid.RowSpan="2"/>
             <GridSplitter Grid.Column="1" Margin="0,0,0.16,0" Grid.Row="1" Width="2" Grid.RowSpan="2">
                 <GridSplitter.Background>
                     <SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
@@ -181,7 +171,7 @@
                     <SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
                 </GridSplitter.Background>
             </GridSplitter>
-            <Stack:StackViewer HorizontalAlignment="Left" Margin="10,7,0,4" Grid.Row="1" Width="204"/>
+            <Stack:StackViewer Margin="1,7,0,4" Grid.Row="1"/>
         </Grid>
     </Grid>
 </Window>
