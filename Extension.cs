@@ -1,10 +1,10 @@
-﻿
-using System;
+﻿using System;
+
 namespace DebugOS
 {
     public class Extension
     {
-        private IExtension extension;
+        public IExtension Interface { get; private set; }
         
         /// <summary>
         /// Gets whether the extension was successfully initialised.
@@ -14,7 +14,7 @@ namespace DebugOS
         /// <summary>
         /// Gets the public name of the extension.
         /// </summary>
-        public string Name { get { return extension.Name; } }
+        public string Name { get { return Interface.Name; } }
 
         /// <summary>
         /// Gets whether the extension has a user interface.
@@ -32,7 +32,7 @@ namespace DebugOS
         /// </summary>
         public Extension(IExtension extension)
         {
-            this.extension = extension;
+            this.Interface = extension;
 
             if (extension as IUIExtension != null) {
                 HasUI = true;
@@ -49,8 +49,8 @@ namespace DebugOS
         public void Initialise(string[] args)
         {
             try 
-            { 
-                this.extension.Initialise(args);
+            {
+                this.Interface.Initialise(args);
                 this.LoadedSuccessfully = true;
             }
             catch 
@@ -69,7 +69,7 @@ namespace DebugOS
         {
             if (this.HasUI)
             {
-                ((IUIExtension)this.extension).SetupUI(UI);
+                ((IUIExtension)this.Interface).SetupUI(UI);
             }
         }
 
@@ -84,7 +84,7 @@ namespace DebugOS
         {
             if (this.HasDebugger)
             {
-                return ((IDebuggerExtension)this.extension).LoadDebugger();
+                return ((IDebuggerExtension)this.Interface).LoadDebugger();
             }
             throw new InvalidOperationException();
         }

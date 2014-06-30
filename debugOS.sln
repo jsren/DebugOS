@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugOS.Core", "DebugOS.Core.csproj", "{A939C5C7-5CAB-4DB3-9EE1-4EBE2BF6F0E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugOS", "DebugOS\DebugOS.csproj", "{AC2E6C4D-F72E-4266-89D2-AE674F53C19D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugOS for Windows", "DebugOS for Windows\DebugOS for Windows.csproj", "{AC2E6C4D-F72E-4266-89D2-AE674F53C19D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugOS.Lib", "DebugOS.Lib\DebugOS.Lib.csproj", "{F4F72AD7-D821-4ED3-80C7-CD5E2E4D611C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugOS.Windows", "DebugOS.Windows\DebugOS.Windows.csproj", "{55FE3674-09E5-4848-97E8-64BA2CC801AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{F4F72AD7-D821-4ED3-80C7-CD5E2E4D611C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4F72AD7-D821-4ED3-80C7-CD5E2E4D611C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4F72AD7-D821-4ED3-80C7-CD5E2E4D611C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55FE3674-09E5-4848-97E8-64BA2CC801AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55FE3674-09E5-4848-97E8-64BA2CC801AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55FE3674-09E5-4848-97E8-64BA2CC801AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55FE3674-09E5-4848-97E8-64BA2CC801AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

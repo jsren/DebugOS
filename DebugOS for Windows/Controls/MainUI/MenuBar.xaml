@@ -1,0 +1,15 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.MenuBar"
+	x:Name="UserControl"
+	d:DesignWidth="1250" d:DesignHeight="23">
+	<Menu x:Name="menubar" Height="23" VerticalAlignment="Bottom" Background="#41FFFFFF" Padding="2,2,0,0">
+		<Menu.Foreground>
+			<SolidColorBrush Color="{DynamicResource PrimaryLabel}"/>
+		</Menu.Foreground>
+	</Menu>
+</UserControl>

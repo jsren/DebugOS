@@ -1,12 +1,17 @@
-﻿using System;
+﻿/* BochsDebugger.cs - (c) James S Renwick 2014
+ * -------------------------------------------
+ * Version 1.1.1
+ */
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 using DebugOS;
 
 using Path = System.IO.Path;
-using System.Threading.Tasks;
 
 namespace DebugOS.Bochs
 {
@@ -28,7 +33,8 @@ namespace DebugOS.Bochs
         public CodeUnit       CurrentCodeUnit   { get; private set; }
         public Breakpoint     CurrentBreakpoint { get; private set; }
 
-        public int AddressWidth { get { return 4; } }
+        public int    AddressWidth { get { return 4; } }
+        public string Name         { get { return "Bochs Internal"; } }
 
         public event EventHandler Continued;
         public event EventHandler Disconnected;
@@ -38,8 +44,14 @@ namespace DebugOS.Bochs
         public event EventHandler<BreakpointHitEventArgs>  BreakpointHit;
         public event EventHandler<RegisterUpdateEventArgs> RefreshRegister;
 
-        public BochsDebugger(string BochsPath, string ConfigFile)
+        public HandleRef WindowHandle { get { return connector.WindowHandle; } }
+
+        public BochsDebugger()
         {
+            // Load properties
+            string bochsPath  = Application.Session.Properties["BochsDebugger.BochsPath"] as string;
+            string configPath = Application.Session.Properties["BochsDebugger.ConfigPath"] as string;
+
             // Initialise locals
             this.breakpoints = new List<Breakpoint>();
             this.codeFiles   = new List<ObjectCodeFile>();
@@ -54,11 +66,11 @@ namespace DebugOS.Bochs
                 RedirectStandardInput  = true,
                 UseShellExecute        = false,
 
-                FileName = BochsPath,
-                Arguments = "-q -f \"" + ConfigFile + '"',
+                FileName  = bochsPath,
+                Arguments = "-q -f \"" + configPath + '"',
             };
             // Add BOCHSHOME env. var. in case the config needs it
-            startInfo.EnvironmentVariables["BOCHSHOME"] = Path.GetDirectoryName(BochsPath);
+            startInfo.EnvironmentVariables["BOCHSHOME"] = Path.GetDirectoryName(bochsPath);
 
             // Create bochs process
             this.bochsProcess = new Process() { StartInfo = startInfo };
@@ -192,7 +204,7 @@ namespace DebugOS.Bochs
         {
             this.AssertPaused();
             // TODO: step over current code line
-
+            throw new NotImplementedException();
         }
 
         public void Continue()
@@ -220,7 +232,7 @@ namespace DebugOS.Bochs
             if (Breakpoint.Address.Type == AddressType.Physical) {
                 this.connector.SetPhysicalBreakpoint(Breakpoint.Address.Value);
             }
-            else if (Breakpoint.Address.Type == AddressType.Linear) {
+            else if (Breakpoint.Address.Type == AddressType.Virtual) {
                 this.connector.SetLinearBreakpoint(Breakpoint.Address.Value);
             }
             else if (Breakpoint.Address.Type == AddressType.Logical) {
@@ -246,8 +258,21 @@ namespace DebugOS.Bochs
             this.connector.ClearBreakpoint(index);
         }
 
+        public ObjectCodeFile[] IncludedObjectFiles
+        {
+            get { return this.codeFiles.ToArray(); }
+        }
+
         public void IncludeObjectFile(ObjectCodeFile file) {
             this.codeFiles.Add(file);
+        }
+
+        public void ExcludeObjectFile(ObjectCodeFile file)
+        {
+            if (this.CurrentObjectFile == file) {
+                this.CurrentObjectFile = null;
+            }
+            this.codeFiles.Remove(file);
         }
     }
 }

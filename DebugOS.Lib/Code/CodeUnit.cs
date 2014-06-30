@@ -30,9 +30,16 @@ namespace DebugOS
             this.Lines  = Lines;
             this.Size   = this.Lines.Sum(line => (long)line.Size);
         }
-        protected CodeUnit()
-        {
+        protected CodeUnit() { }
 
+        /// <summary>
+        /// Moves the offset of the current code unit by the given address delta.
+        /// Negative values will subtract from the offset.
+        /// </summary>
+        /// <param name="offsetDelta">The number of bytes by which to move the offset.</param>
+        public void Rebase(long offsetDelta)
+        {
+            this.Offset += offsetDelta;
         }
 
         /// <summary>

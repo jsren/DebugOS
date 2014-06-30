@@ -8,16 +8,16 @@ namespace DebugOS
     public enum AddressType
     {
         /// <summary>
-        /// The direct memory location
+        /// The direct memory location.
         /// </summary>
         Physical = 0,
         /// <summary>
-        /// The address within the process' scope, subject to paging
+        /// The address within the process' scope, subject to paging.
         /// </summary>
-        Linear   = 1,
+        Virtual = 1,
         /// <summary>
-        /// The address relative to the current segment, subject to paging
+        /// The address, subject to paging and offset by the given segment.
         /// </summary>
-        Logical  = 2
+        Logical = 2
     }
 }

@@ -1,6 +1,6 @@
 ﻿/* ObjectFileLoader.cs - (c) James S Renwick 2014
  * -----------------------------------------------
- * Version 1.1.0
+ * Version 1.2.0
  * 
  * This code file contains the logic for creating an ObjectCodeFile object
  * from the output produced by objdump.
@@ -40,18 +40,27 @@ namespace DebugOS.Loaders
                 argAdd += " -M intel";
             }
 
-            // Invoke objdump
+            // Try to invoke objdump
             var proc = Process.Start(new ProcessStartInfo()
             {
-                CreateNoWindow = false,
+                CreateNoWindow         = true,
                 RedirectStandardOutput = true,
-                UseShellExecute = false,
-                FileName = @"i586-elf-objdump.exe",
+                RedirectStandardError  = true,
+                UseShellExecute        = false,
+                FileName               = @"objdump.exe",
                 Arguments = "-x -S -C" + argAdd + " \"" + filepath + '"'
             });
 
             // Load from objdump output
-            return LoadFromObjdump(proc.StandardOutput, Path.GetFileName(filepath), asmSyntax);
+            var output = LoadFromObjdump(proc.StandardOutput, Path.GetFullPath(filepath), asmSyntax);
+
+            // Check for error
+            if (proc.WaitForExit(3000) && proc.ExitCode != 0)
+            {
+                throw new Exception(String.Format("objdump returned error code {0}: {1}",
+                    proc.ExitCode, proc.StandardError.ReadToEnd()));
+            }
+            else return output;
         }
 
         /// <summary>
@@ -65,7 +74,7 @@ namespace DebugOS.Loaders
         {
             // Count the matched regexes
             const int find = 2;
-            int findCount = 0;
+            int findCount  = 0;
 
             string line;
             string architecture = "";

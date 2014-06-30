@@ -31,16 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Application.cs" />
     <Compile Include="Code\AssemblyLine.cs" />
     <Compile Include="Code\AssemblySyntax.cs" />
     <Compile Include="Code\CodeLine.cs" />
@@ -55,16 +51,21 @@
     <Compile Include="Debugger\Objects\AddressType.cs" />
     <Compile Include="Debugger\Objects\BreakpointHitEventArgs.cs" />
     <Compile Include="Debugger\Objects\RegisterUpdateEventArgs.cs" />
+    <Compile Include="Debugger\Objects\Segment.cs" />
     <Compile Include="Debugger\Objects\SteppedEventArgs.cs" />
     <Compile Include="Debugger\Objects\RegisterType.cs" />
     <Compile Include="Debugger\Objects\Register.cs" />
+    <Compile Include="DebugSession.cs" />
+    <Compile Include="UI\GUIType.cs" />
+    <Compile Include="UI\IMainPanel.cs" />
+    <Compile Include="UI\IMenuItem.cs" />
     <Compile Include="UI\IToolbarItem.cs" />
     <Compile Include="UI\IToolbarPanel.cs" />
     <Compile Include="Debugger\Objects\Breakpoint.cs" />
     <Compile Include="Debugger\IDebugger.cs" />
     <Compile Include="UI\IDebugUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Debugger\IDebugExtension.cs" />
+    <Compile Include="IExtension.cs" />
     <Compile Include="UI\Objects\PanelLocation.cs" />
     <Compile Include="UI\Objects\PanelSide.cs" />
     <Compile Include="Utils.cs" />

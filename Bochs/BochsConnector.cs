@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -26,12 +27,27 @@ namespace DebugOS.Bochs
         public event EventHandler<SteppedEventArgs> Stepped;
         public event EventHandler<RegisterUpdateEventArgs> RegisterUpdated;
 
+        
+
         // Holds the bochs process with which to communicate
         private Process bochsProcess;
         // Holds the current set of registers
         public Dictionary<Register, byte[]> registers;
         // Holds the current queue of async requests
         private Queue<IBochsRequest> requests;
+
+        /// <summary>
+        /// Gets the handle of the current BOCHS process' main window.
+        /// </summary>
+        public HandleRef WindowHandle
+        { 
+            get 
+            {
+                System.Threading.Thread.Sleep(1000);
+                bochsProcess.Refresh();
+                return new HandleRef(bochsProcess, bochsProcess.MainWindowHandle);
+            } 
+        }
 
         public BochsConnector(Process bochsProcess)
         {
@@ -94,10 +110,6 @@ namespace DebugOS.Bochs
 
         public void BeginReadMemory(Address start, int length, Action<UInt32[]> callback)
         {
-            if (start.Type == AddressType.Logical)
-            {
-                throw new NotImplementedException();
-            }
             if (callback == null) return;
 
             int carry;
@@ -113,6 +125,26 @@ namespace DebugOS.Bochs
             cmdBuilder.Append(start.Type == AddressType.Physical ? "xp /" : "x /");
             cmdBuilder.Append(count);
             cmdBuilder.Append("wx ");
+
+            if (start.Type == AddressType.Logical)
+            {
+                switch (start.Segment)
+                {
+                    case Segment.Code:
+                        cmdBuilder.Append("cs:"); break;
+                    case Segment.Data:
+                        cmdBuilder.Append("ds:"); break;
+                    case Segment.Stack:
+                        cmdBuilder.Append("ss:"); break;
+                    case Segment.Extended1:
+                        cmdBuilder.Append("es:"); break;
+                    case Segment.Extended2:
+                        cmdBuilder.Append("fs:"); break;
+                    case Segment.Extended3:
+                        cmdBuilder.Append("gs:"); break;
+                }
+            }
+
             cmdBuilder.Append(Utils.GetHexString((ulong)start.Value, prefix: true));
 
             this.requests.Enqueue(new ReadMemoryRequest(count, callback));

@@ -15,6 +15,7 @@ namespace DebugOS
 
         Register[] AvailableRegisters { get; }
         IEnumerable<Breakpoint> Breakpoints { get; }
+        ObjectCodeFile[] IncludedObjectFiles { get; }
 
         byte[] ReadRegister(Register register);
         void WriteRegister(Register register, byte[] data);
@@ -23,11 +24,13 @@ namespace DebugOS
         void WriteMemory(Address address, byte[] data);
 
         void IncludeObjectFile(ObjectCodeFile file);
+        void ExcludeObjectFile(ObjectCodeFile file);
 
         CodeUnit CurrentCodeUnit { get; }
         long     CurrentAddress  { get; }
 
         int AddressWidth { get; }
+        string Name { get; }
 
         ObjectCodeFile CurrentObjectFile { get; }
         Breakpoint     CurrentBreakpoint { get; }

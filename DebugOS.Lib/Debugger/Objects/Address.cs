@@ -5,17 +5,27 @@ namespace DebugOS
     {
         public long Value { get; private set; }
         public AddressType Type { get; private set; }
+        public Segment Segment { get; private set; }
 
         public Address(long value) : this()
         {
-            this.Type  = AddressType.Physical;
-            this.Value = value;
+            this.Type    = AddressType.Physical;
+            this.Value   = value;
+            this.Segment = Segment.Data;
         }
 
-        public Address(AddressType type, long value) : this()
+        public Address(long value, bool virtualAddress) : this()
         {
-            this.Type  = type;
-            this.Value = value;
+            this.Type    = virtualAddress ? AddressType.Physical : AddressType.Virtual;
+            this.Value   = value;
+            this.Segment = Segment.Data;
+        }
+
+        public Address(Segment segment, long value) : this()
+        {
+            this.Type    = AddressType.Logical;
+            this.Value   = value;
+            this.Segment = segment;
         }
 
         public static bool operator ==(Address addr1, Address addr2) {

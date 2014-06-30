@@ -1,0 +1,24 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.Extensions.LoadedAssemblyItem"
+	x:Name="UserControl"
+	d:DesignWidth="440.726" d:DesignHeight="23" HorizontalAlignment="Left">
+
+	<Grid HorizontalAlignment="Left" Width="Auto">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="108"/>
+			<ColumnDefinition Width="125.219"/>
+			<ColumnDefinition Width="Auto" MinWidth="207.507"/>
+		</Grid.ColumnDefinitions>
+		<TextBlock x:Name="typeText" HorizontalAlignment="Left" Margin="3,3,0,4.04" TextWrapping="Wrap" Width="101.095"><Run Language="en-gb" Text="Primary Executable"/></TextBlock>
+		<TextBlock x:Name="sourceText" HorizontalAlignment="Left" Margin="6.76,3,0,0" VerticalAlignment="Top" Grid.Column="2" Foreground="Black" Height="15.96" Width="200.747"><Run Language="en-gb" Text="S:\Source\FrobOS\Build\iso\kernel.bin"/></TextBlock>
+		<Grid Margin="8,0.5,9,0.5" Grid.Column="1" Height="22" VerticalAlignment="Center">
+			<TextBox x:Name="baseText" TextWrapping="Wrap" Text="1000000" Padding="14,0,1,1" Foreground="Black"/>
+			<TextBlock HorizontalAlignment="Left" Height="19.333" Margin="5.26,1.839,0,-1.172" TextWrapping="Wrap" VerticalAlignment="Top" Width="20.667" Foreground="Black"><Run Language="en-gb" Text="0x"/></TextBlock>
+		</Grid>
+	</Grid>
+</UserControl>

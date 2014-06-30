@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Drawing;
 
 namespace DebugOS
 {
@@ -10,8 +9,8 @@ namespace DebugOS
         object ToolTip   { get; set; }
         bool   IsToggle  { get; }
 
-        ImageSource Icon { get; set; }
+        Bitmap Icon { get; set; }
 
-        event MouseButtonEventHandler Clicked;
+        event Action<object> Clicked;
     }
 }

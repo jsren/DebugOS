@@ -1,4 +1,8 @@
-﻿using System;
+﻿/* ObjectCodeFile.cs - (c) James S Renwick 2014
+ * --------------------------------------------
+ * Version 1.1.0
+ */
+using System;
 using System.Linq;
 
 namespace DebugOS
@@ -8,10 +12,13 @@ namespace DebugOS
     /// </summary>
     public sealed class ObjectCodeFile
     {
-        /// <summary>The starting address of the object file.</summary>
-        public long StartAddress  { get; private set; }
+        /// <summary>The actual load address.</summary>
+        private long loadAddress;
+
+        /// <summary>The requested load address of the object file in memory.</summary>
+        public long RequestedLoadAddress { get; private set; }
         /// <summary>The name of the object file.</summary>
-        public String Filename { get; private set; }
+        public String Filepath { get; private set; }
         /// <summary>The targeted architecture of the object file.</summary>
         public String Architecture { get; private set; }
         /// <summary>The sections of the object file.</summary>
@@ -22,6 +29,22 @@ namespace DebugOS
         public CodeUnit[] Code { get; private set; }
         /// <summary>The total runtime length of the object file in bytes.</summary>
         public long Size { get; private set; }
+
+        /// <summary>Gets or sets the actual load address of the object file.</summary>
+        public long ActualLoadAddress
+        {
+            get { return this.loadAddress; }
+            set
+            {
+                this.loadAddress = value;
+
+                long delta = this.loadAddress - this.RequestedLoadAddress;
+                if (delta != 0)
+                {
+                    foreach (CodeUnit unit in Code) { unit.Rebase(delta); }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the code for the specified symbol, or null if not found.
@@ -84,7 +107,7 @@ namespace DebugOS
         /// <summary>
         /// Creates a new object code file object.
         /// </summary>
-        /// <param name="StartAddress">The starting address of the object file.</param>
+        /// <param name="StartAddress">The load address of the object file.</param>
         /// <param name="Filename">The name of the object file.</param>
         /// <param name="Architecture">The targeted architecture of the object file.</param>
         /// <param name="Sections">The sections of the object file.</param>
@@ -93,12 +116,14 @@ namespace DebugOS
         public ObjectCodeFile(long StartAddress, String Filename, String Architecture,
             Section[] Sections, SymbolTable SymbolTable, CodeUnit[] Code)
         {
-            this.StartAddress = StartAddress;
-            this.Filename     = Filename;
+            this.loadAddress  = StartAddress;
+            this.Filepath     = Filename;
             this.Architecture = Architecture;
             this.Sections     = Sections;
             this.SymbolTable  = SymbolTable;
             this.Code         = Code;
+
+            this.RequestedLoadAddress = StartAddress;
 
             // Sum loaded sections' sizes
             if (this.Sections != null)

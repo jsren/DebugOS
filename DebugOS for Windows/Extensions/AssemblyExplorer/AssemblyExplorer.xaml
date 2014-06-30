@@ -1,0 +1,67 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:DebugOS"
+	x:Class="DebugOS.Extensions.AssemblyExplorer"
+	x:Name="Window"
+	Title="Loaded Assemblies"
+	Width="528" Height="309" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+	<Window.Foreground>
+		<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+	</Window.Foreground>
+	<Window.Background>
+		<SolidColorBrush Color="{DynamicResource Background}"/>
+	</Window.Background>
+
+	<Grid x:Name="LayoutRoot">
+		<Grid Margin="30,56.356,30,43" MinWidth="310" MinHeight="100">
+			<Grid.RowDefinitions>
+				<RowDefinition/>
+				<RowDefinition Height="29.936"/>
+			</Grid.RowDefinitions>
+			<Grid Margin="0,0,0,2.25">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="23"/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<ListBox x:Name="assemblyList" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Visible" Grid.Row="1"/>
+				<Path Data="M0,46.5 L2.1736763E-15,82" HorizontalAlignment="Left" Margin="0,0,0,-0.5" Stretch="Fill" Width="1">
+					<Path.Stroke>
+						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+							<GradientStop Color="#FF828790" Offset="1"/>
+							<GradientStop Color="White"/>
+						</LinearGradientBrush>
+					</Path.Stroke>
+				</Path>
+				<Path Data="M0,46.5 L2.1736763E-15,82" HorizontalAlignment="Left" Margin="114.662,0,0,125.958" Stretch="Fill" Width="1" Grid.RowSpan="2">
+					<Path.Stroke>
+						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+							<GradientStop Color="#FF828790" Offset="1"/>
+							<GradientStop Color="White"/>
+						</LinearGradientBrush>
+					</Path.Stroke>
+				</Path>
+				<Path Data="M0,46.5 L2.1736763E-15,82" HorizontalAlignment="Left" Margin="237,0,0,-0.5" Stretch="Fill" Width="1">
+					<Path.Stroke>
+						<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+							<GradientStop Color="#FF828790" Offset="1"/>
+							<GradientStop Color="White"/>
+						</LinearGradientBrush>
+					</Path.Stroke>
+				</Path>
+				<TextBlock HorizontalAlignment="Left" Height="15.5" Margin="6,5.25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"><Run Language="en-gb" Text="Type"/></TextBlock>
+				<TextBlock HorizontalAlignment="Left" Height="15.5" Margin="120.662,5.25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"><Run Language="en-gb" Text="Base"/></TextBlock>
+				<TextBlock HorizontalAlignment="Left" Height="15.5" Margin="243,5.25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"><Run Language="en-gb" Text="Object File"/></TextBlock>
+			</Grid>
+			<Grid Margin="0" VerticalAlignment="Center" Grid.Row="1">
+				<Button Content="Load Module" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="107" Click="OnLoadModule"/>
+				<Button Content="Remove" HorizontalAlignment="Left" Height="24" Margin="112,0,0,0" VerticalAlignment="Top" Width="99" Click="OnRemoveModule"/>
+			</Grid>
+		</Grid>
+		<TextBlock HorizontalAlignment="Left" Height="23" Margin="30,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="203" FontSize="18.667" Foreground="#FF5F5F5F"><Run Language="en-gb" Text="Loaded Assemblies"/></TextBlock>
+		<Grid Margin="0,0,30,23.669" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Button Content="OK" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="85" Click="OnOkay"/>
+			<Button Content="Cancel" HorizontalAlignment="Left" Height="24" Margin="97.5,0,0,0" VerticalAlignment="Top" Width="85" Click="OnCancel"/>
+		</Grid>
+	</Grid>
+</Window>

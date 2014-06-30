@@ -3,7 +3,7 @@ namespace DebugOS
 {
     public enum PanelSide
     {
+        Left,
         Right,
-        Left
     }
 }
