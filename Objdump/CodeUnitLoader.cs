@@ -1,6 +1,6 @@
 ﻿/* CodeUnitLoader.cs - (c) James S Renwick 2014
  * -----------------------------------------------
- * Version 1.1.0
+ * Version 1.2.0
  * 
  * This code file contains the logic for parsing and loading
  * code units of an object file from the output produced by objdump.
@@ -21,12 +21,20 @@ namespace DebugOS.Loaders
     public static class CodeUnitLoader
     {
         // Regex for locating the start of a unit
+        static readonly Regex UnitStartRegex
+            = new Regex(@"(?<offset>[\da-fA-F]+) \<(?<name>.+)\>:");
+
+        // Regex for parsing a symbol definition
+        static readonly Regex SymbolStartRegex
+            = new Regex(@"(?<symbol>.*):");
+
+        // Regex for parsing the line no. and file of a block of code
         static readonly Regex SourceStartRegex
-            = new Regex(@"(?<offset>[\da-fA-F]{8}) \<(?<name>.+)\>:");
+            = new Regex(@"^(?<path>\S.*):(?<line>\d+)(?: +.*)?");
 
         // Regex for parsing a line of assembly
         static readonly Regex AssemblyLineRegex
-            = new Regex(@" +(?<offset>[\da-fA-F]+):\t(?<bytes>([\da-fA-F]{2} )+)\s*\t(?<opcode>\S+)\s+(?<args>.*)");
+            = new Regex(@" +(?<offset>[\da-fA-F]+):\t(?<bytes>([\da-fA-F]{2}\s*)+)\s*\t(?<opcode>\S+)\s+(?<args>.*)");
 
 
         /// <summary>
@@ -55,7 +63,7 @@ namespace DebugOS.Loaders
                 if (String.IsNullOrWhiteSpace(line)) continue;
 
                 // Look for the start of a unit
-                var match = SourceStartRegex.Match(line);
+                var match = UnitStartRegex.Match(line);
                 if (match.Success)
                 {
                     // Load code for that unit
@@ -93,8 +101,6 @@ namespace DebugOS.Loaders
                 }
             }
 
-
-
             int index = 0;
             foreach (Capture item in match.Groups[1].Captures)
             {
@@ -107,11 +113,18 @@ namespace DebugOS.Loaders
 
         private static void load(StreamReader stream, string firstLine, List<CodeUnit> sources, AssemblySyntax syntax)
         {
+            Match  match         = UnitStartRegex.Match(firstLine);
+            uint   unitOffset    = Utils.ParseHex32(match.Groups[1].Value);
+            uint   currentOffset = unitOffset;
+            long   sourceLineNo  = -1;
+            string symbol, line  = stream.ReadLine();
 
-            Match  match         = SourceStartRegex.Match(firstLine);
-            uint   sourceOffset  = Utils.ParseHex32(match.Groups[1].Value);
-            uint   currentOffset = sourceOffset;
-            string line, name    = match.Groups[2].Value;
+            string name = match.Groups[2].Value;
+            string file = "";
+
+            // Get the unit's symbol name
+            var symbolMatch = SymbolStartRegex.Match(line);
+            symbol = symbolMatch.Groups[1].Value;
 
             string codeLine = "";
             var    asmLines = new List<AssemblyLine>();
@@ -126,32 +139,41 @@ namespace DebugOS.Loaders
                     asmLines.Add(LoadAssembly(asmMatch, syntax));
                     continue;
                 }
-                // Line indicates next code source - move on to next
+                // Line indicates next code unit - move on to next
                 // WARNING: This is BAD - could StackOverflow!
                 // TODO: Easy fix!
-                var nextSourceMatch = SourceStartRegex.Match(line);
+                var nextSourceMatch = UnitStartRegex.Match(line);
                 if (nextSourceMatch.Success)
                 {
                     load(stream, line, sources, syntax);
                     break;
                 }
-                // Line is source code
-                if (asmLines.Count != 0) // It's a new line. Save this line & move on to next.
+                // Line is a source pointer
+                var sourceStart = SourceStartRegex.Match(line);
+                if (sourceStart.Success)
                 {
-                    int size = asmLines.Sum(asm => asm.MachineCode.Length);
+                    // It's a new line. Save this line if we have asm & move on to next.
+                    if (asmLines.Count != 0) 
+                    {
+                        int size = asmLines.Sum(asm => asm.MachineCode.Length);
 
-                    lines.Add(new CodeLine(
-                        size, currentOffset, codeLine.TrimEnd('\n'), asmLines.ToArray()
-                    ));
+                        lines.Add(new CodeLine(
+                            size, currentOffset, sourceLineNo, codeLine.TrimEnd('\n'), asmLines.ToArray()
+                        ));
+                        
+                        asmLines.Clear();             // Clear temporary list for re-use
+                        codeLine       = "";          // Clear code
+                        currentOffset += (uint)size;  // Update offset
+                    }
 
-                    asmLines.Clear();             // Clear temporary list for re-use
-                    codeLine       = line;        // Store this new code line
-                    currentOffset += (uint)size;  // 
+                    // Update file & line number
+                    file         = sourceStart.Groups[1].Value;
+                    sourceLineNo = long.Parse(sourceStart.Groups[2].Value);
                 }
-                // Still part of current line
+                // Line is source code
                 else { codeLine += '\n' + line; }
             }
-
+            // Add each line and count the actual assembly size
             if (asmLines.Count != 0 || !String.IsNullOrWhiteSpace(codeLine.Trim('\n')))
             {
                 var size2 = 0;
@@ -160,9 +182,9 @@ namespace DebugOS.Loaders
                     size2 += asmline.MachineCode.Length;
                 }
 
-                lines.Add(new CodeLine(size2, currentOffset, codeLine, asmLines.ToArray()));
+                lines.Add(new CodeLine(size2, currentOffset, sourceLineNo, codeLine, asmLines.ToArray()));
             }
-            sources.Add(new CodeUnit(sourceOffset, name, lines.ToArray()));
+            sources.Add(new CodeUnit(unitOffset, name, symbol, file, lines.ToArray()));
         }
     }
 }

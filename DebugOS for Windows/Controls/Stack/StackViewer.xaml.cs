@@ -8,7 +8,7 @@ namespace DebugOS.Controls.Stack
     /// </summary>
     public partial class StackViewer : UserControl
     {
-        private byte[] BP;
+        private byte[] FP;
         private byte[] SP;
 
         public StackViewer()
@@ -22,65 +22,118 @@ namespace DebugOS.Controls.Stack
         {
             if (Application.Debugger != null && Application.Debugger.CanReadMemory)
             {
-                Application.Debugger.RefreshRegister += OnRegisterUpdate;
-                Application.Debugger.Stepped         += Debugger_Stepped;
+                Application.Debugger.RefreshRegisters += OnRegisterUpdate;
+                Application.Debugger.Suspended       += Debugger_Suspended;
             }
         }
 
-        void OnRegisterUpdate(object sender, RegisterUpdateEventArgs e)
+        void Debugger_Suspended(object sender, EventArgs e)
         {
-            if (BP != null && SP != null)
+            
+        }
+
+        void OnRegisterUpdate(object sender, RegistersChangedEventArgs e)
+        {
+            bool needUpdate = false;
+
+            // Look for stack/frame pointers to update
+            foreach (string regname in e.AffectedRegisters)
             {
-                this.requestUpdate();
-                BP = SP = null;
+                var reg = Application.Debugger.Registers[regname];
+
+                if (reg.Type == RegisterType.FramePointer && 
+                    Application.Debugger.Registers.CanRead(regname))
+                {
+                    this.FP = Application.Debugger.ReadRegister(regname);
+                    needUpdate = true;
+                }
+                else if (reg.Type == RegisterType.StackPointer &&
+                    Application.Debugger.Registers.CanRead(regname))
+                {
+                    this.SP = Application.Debugger.ReadRegister(regname);
+                    needUpdate = true;
+                }
             }
-            else if (e.Register.Type == RegisterType.BasePointer) {
-                BP = e.Value;
-            }
-            else if (e.Register.Type == RegisterType.StackPointer) {
-                SP = e.Value;
+
+            if (needUpdate) // Update stack as required
+            {
+                this.RequestUpdate();
             }
         }
 
-        void Debugger_Stepped(object sender, SteppedEventArgs e)
-        {
-            BP = SP = null;
-            this.Dispatcher.Invoke((Action)delegate() { this.stack.Children.Clear(); });
-        }
 
-
-        void requestUpdate()
+        void RequestUpdate()
         {
             ulong bpValue, spValue;
 
-            if (BP.Length == 4)
+            // Some architectures have no frame (base) pointer
+            if (FP == null && SP != null)
             {
-                bpValue = (uint)Utils.IntFromBytes(BP);
+                FP = SP;
+            }
+
+            this.Dispatcher.Invoke((Action)delegate() { this.stack.Children.Clear(); });
+
+            if (FP.Length == 4)
+            {
+                bpValue = (uint)Utils.IntFromBytes(FP);
                 spValue = (uint)Utils.IntFromBytes(SP);
             }
-            else if (BP.Length == 8)
+            else if (FP.Length == 8)
             {
-                bpValue = (ulong)Utils.LongFromBytes(BP);
+                bpValue = (ulong)Utils.LongFromBytes(FP);
                 spValue = (ulong)Utils.LongFromBytes(SP);
             }
             else return; // Invalid register size - cannot compute
 
-            int diff = Math.Max(Math.Max((int)(bpValue - spValue), 20), 96);
+            int length       = Math.Min(Math.Max(Math.Abs((int)(bpValue - spValue)), 20), 96);
+            int addressWidth = Application.Debugger.CurrentArchitecture.StackWidth;
 
-            // Read stack data
-            Application.Debugger.BeginReadMemory(new Address(Segment.Stack, (long)spValue), diff, (UInt32[] data) =>
+            if (Application.Session.Architecture.StackDirection == StackDirection.Down)
             {
-                this.Dispatcher.Invoke((Action)delegate()
+                // Read stack data
+                Application.Debugger.BeginReadMemory(new Address(Segment.Stack, (long)spValue), length, (byte[] data) =>
                 {
-                    if (Application.Debugger.AddressWidth == 4)
+                    this.Dispatcher.Invoke((Action)delegate()
                     {
-                        for (int i = 0; i < data.Length; i++)
+                        byte[] buffer = new byte[addressWidth];
+                        int    num    = data.Length / addressWidth;
+
+                        for (int i = 0; i < num; i++)
                         {
-                            this.stack.Children.Add(new StackValueItem(data[i]) { IsReturnAddress = (i == 0) });
+                            // Copy a single item's bytes
+                            Array.Copy(data, i * addressWidth, buffer, 0, addressWidth);
+                            // Add the visual
+                            this.stack.Children.Add(new StackValueItem(buffer, isRet: (i == 0)));
                         }
-                    }
+                        "".ToUpper();
+                    });
                 });
-            });
+            }
+            else
+            {
+                // Read stack data
+                Application.Debugger.BeginReadMemory(new Address(Segment.Stack, (long)spValue - length), length, (byte[] data) =>
+                {
+                    this.Dispatcher.Invoke((Action)delegate()
+                    {
+                        byte[] buffer  = new byte[addressWidth];
+                        int    num     = data.Length / addressWidth;
+                        bool   retAddr = true;
+                            
+                        for (int i = num - 1; i != -1; i--)
+                        {
+                            // Copy the single item's bytes
+                            Array.Copy(data, i * addressWidth, buffer, 0, addressWidth);
+                            // Add the visual
+                            this.stack.Children.Add(new StackValueItem(buffer, isRet: retAddr));
+                            retAddr = false;
+                        }
+                    });
+                });
+            }
+
+            
         }
     }
 }

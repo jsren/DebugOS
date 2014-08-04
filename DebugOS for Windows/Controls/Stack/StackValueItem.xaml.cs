@@ -11,23 +11,23 @@ namespace DebugOS.Controls
     /// </summary>
     public partial class StackValueItem : UserControl
     {
-        public StackValueItem(UInt32 value)
+        public StackValueItem(byte[] value, bool isRet = false)
         {
             InitializeComponent();
-            this.IsReturnAddress = false;
+            this.IsReturnAddress = isRet;
 
-            string stringValue = Utils.GetHexString(value, Application.Debugger.AddressWidth * 2);
+            // Reverse value for display
+            Array.Reverse(value);
 
+            // Build the hex string
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < stringValue.Length; i += 2)
+            for (int i = 0; i < value.Length; i++)
             {
-                builder.Append(stringValue[i]);
-                builder.Append(stringValue[i + 1]);
+                // Add each byte as a hex string
+                builder.Append(Utils.GetHexString(value[i], fixedPlaces: 2, prefix: false));
 
-                if (i + 2 < stringValue.Length)
-                {
-                    builder.Append(' ');
-                }
+                // Add spaces for all but the last item
+                if (i + 1 != value.Length) builder.Append(' ');
             }
             this.value.Text = builder.ToString();
         }

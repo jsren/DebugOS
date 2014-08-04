@@ -15,6 +15,7 @@ namespace DebugOS.GDB
         private const byte EscapeTrans  = 0x20;
 
         private static readonly Regex errorRegex = new Regex(@"^E *([\da-zA-Z][\da-zA-Z]?)$");
+        private static readonly Regex stopRegex  = new Regex(@"^[STWXOF].*");
 
         /// <summary>
         /// Gets the string contents of the message.
@@ -33,6 +34,11 @@ namespace DebugOS.GDB
         /// The message's error code, if applicable.
         /// </summary>
         public int ErrorCode { get; protected set; }
+
+        /// <summary>
+        /// Gets whether the message is a stop reply.
+        /// </summary>
+        public bool IsStopReply { get; protected set; }
 
 
         /// <summary>
@@ -104,6 +110,11 @@ namespace DebugOS.GDB
                 {
                     this.IsError = true;
                     this.ErrorCode = Convert.ToInt32(match.Groups[1].Value, 16);
+                }
+
+                if (stopRegex.IsMatch(this.Data))
+                {
+                    this.IsStopReply = true;
                 }
             }
         }

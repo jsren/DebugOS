@@ -1,116 +1,92 @@
 ﻿/* BochsDebugger.cs - (c) James S Renwick 2014
  * -------------------------------------------
- * Version 1.1.1
+ * Version 1.3.2
  */
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-
-using DebugOS;
-
-using Path = System.IO.Path;
+using System.Linq;
 
 namespace DebugOS.Bochs
 {
     public class BochsDebugger : IDebugger
     {
-        private Process        bochsProcess;
-        private BochsConnector connector;
-        private bool           breakOnModeChange;
-
+        // Private variables
+        private LiveCodeUnit         liveCodeUnit;
+        private BochsConnector       connector;
         private List<Breakpoint>     breakpoints;
-        private List<ObjectCodeFile> codeFiles;
+        private List<ObjectCodeFile> objectFiles;
 
+        private bool breakOnModeChange; // When true, breaks when the CPU changes mode
+
+        // Public properties
         public bool CanReadMemory  { get { return true; } }
         public bool CanWriteMemory { get { return false; } }
 
-        public long           CurrentAddress    { get; private set; }
-        public DebugStatus    CurrentStatus     { get; private set; }
-        public ObjectCodeFile CurrentObjectFile { get; private set; }
-        public CodeUnit       CurrentCodeUnit   { get; private set; }
-        public Breakpoint     CurrentBreakpoint { get; private set; }
+        public long           CurrentAddress      { get; private set; }
+        public Architecture   CurrentArchitecture { get; private set; }
+        public Breakpoint     CurrentBreakpoint   { get; private set; }
+        public CodeUnit       CurrentCodeUnit     { get; private set; }
+        public ObjectCodeFile CurrentObjectFile   { get; private set; }
+        public DebugStatus    CurrentStatus       { get; private set; }
 
-        public int    AddressWidth { get { return 4; } }
-        public string Name         { get { return "Bochs Internal"; } }
-
+        public RegisterSet Registers { get; private set; }
+        
+        
         public event EventHandler Continued;
         public event EventHandler Disconnected;
-        public event EventHandler RefreshMemory;
+        public event EventHandler Suspended;
+        public event EventHandler ArchitectureChanged;
+        
+        public event EventHandler<RegistersChangedEventArgs> RefreshRegisters;
 
-        public event EventHandler<SteppedEventArgs>        Stepped;
-        public event EventHandler<BreakpointHitEventArgs>  BreakpointHit;
-        public event EventHandler<RegisterUpdateEventArgs> RefreshRegister;
+        public IEnumerable<Breakpoint> Breakpoints
+        {
+            get { return this.breakpoints.ToArray(); }
+        }
+        public ObjectCodeFile[] IncludedObjectFiles
+        {
+            get { return this.objectFiles.ToArray(); }
+        }
 
-        public HandleRef WindowHandle { get { return connector.WindowHandle; } }
-
+        /// <summary>
+        /// Initializes and connects to a new Bochs debugger.
+        /// </summary>
         public BochsDebugger()
         {
             // Load properties
-            string bochsPath  = Application.Session.Properties["BochsDebugger.BochsPath"] as string;
-            string configPath = Application.Session.Properties["BochsDebugger.ConfigPath"] as string;
+            string bochsPath  = Application.Session.Properties["BochsDebugger.BochsPath"];
+            string configPath = Application.Session.Properties["BochsDebugger.ConfigPath"];
+
+            // Set the current architecture to the session one
+            this.CurrentArchitecture = Application.Session.Architecture;
 
             // Initialise locals
-            this.breakpoints = new List<Breakpoint>();
-            this.codeFiles   = new List<ObjectCodeFile>();
+            this.breakpoints  = new List<Breakpoint>();
+            this.objectFiles  = new List<ObjectCodeFile>();
+            this.liveCodeUnit = new LiveCodeUnit();
 
-            this.breakpoints.Add(new Breakpoint(false, new Address())); // Add a dead breakpoint to create 1-based indices
+            // Make initial register listing with all dismissive
+            Register[] regs = this.CurrentArchitecture.Registers;
+            this.Registers  = new RegisterSet(regs, new bool[regs.Length], new bool[regs.Length]);
 
-            // Configure bochs process
-            var startInfo = new ProcessStartInfo()
-            {
-                CreateNoWindow         = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput  = true,
-                UseShellExecute        = false,
-
-                FileName  = bochsPath,
-                Arguments = "-q -f \"" + configPath + '"',
-            };
-            // Add BOCHSHOME env. var. in case the config needs it
-            startInfo.EnvironmentVariables["BOCHSHOME"] = Path.GetDirectoryName(bochsPath);
-
-            // Create bochs process
-            this.bochsProcess = new Process() { StartInfo = startInfo };
-            this.connector    = new BochsConnector(bochsProcess);
+            // Load Bochs and begin
+            this.connector = new BochsConnector(bochsPath, configPath);
 
             // Register handlers
-            this.connector.Terminated += this.OnBochsTerminated;
-            this.connector.Stepped    += this.OnBochsStepped;
-
+            this.connector.Terminated      += this.OnBochsTerminated;
+            this.connector.Stepped         += this.OnBochsStepped;
             this.connector.RegisterUpdated += this.OnRegistersUpdated;
-
-            // Let's-a go!
-            bochsProcess.Start();
-            bochsProcess.BeginOutputReadLine();
         }
 
-        void OnRegistersUpdated(object sender, RegisterUpdateEventArgs e)
+
+
+
+        private void AssertPaused()
         {
-            if (this.RefreshRegister != null) this.RefreshRegister(this, e);
-        }
-
-        public Register[] AvailableRegisters {
-            get { return this.connector.registers.Keys.ToArray(); }
-        }
-        public IEnumerable<Breakpoint> Breakpoints {
-            get { return breakpoints; }
-        }
-
-        public byte[] ReadRegister(Register register) {
-            return this.connector.registers[register];
-        }
-        public void WriteRegister(Register register, byte[] data) {
-            throw new NotImplementedException();
-        }
-
-        public void BeginReadMemory(Address address, int length, Action<UInt32[]> callback) {
-            this.connector.BeginReadMemory(address, length, callback);
-        }
-        public void WriteMemory(Address address, byte[] data) {
-            throw new NotImplementedException();
+            if (this.CurrentStatus != DebugStatus.Suspended)
+            {
+                throw new DebuggerNotPausedException();
+            }
         }
 
         public bool BreakOnCPUModeChange
@@ -126,35 +102,118 @@ namespace DebugOS.Bochs
             }
         }
 
-        // Fired when can no longer read output
-        void OnBochsTerminated(object sender, EventArgs e)
+        public void ClearBreakpoint(Breakpoint breakpoint)
+        {
+            this.AssertPaused();
+
+            // Get the breakpoint
+            int index = this.breakpoints.IndexOf(breakpoint);
+            if (index == -1)
+            {
+                throw new Exception("Unknown breakpoint, cannot clear");
+            }
+            // Clear the breakpoint
+            this.breakpoints[index].IsActive = false;
+            this.connector.ClearBreakpoint(index);
+        }
+
+        public void Continue()
+        {
+            this.AssertPaused();
+
+            // Update status and then continue
+            this.CurrentStatus = DebugStatus.Executing;
+            this.connector.Continue();
+
+            // Fire event
+            if (this.Continued != null) this.Continued(this, null);
+        }
+
+        public void Disconnect()
         {
             this.CurrentStatus = DebugStatus.Disconnected;
-
-            if (this.Disconnected != null) this.Disconnected(this, null);
+            this.connector.Disconnect();
         }
 
-        void OnBochsStepped(object sender, SteppedEventArgs e)
+        public void ExcludeObjectFile(ObjectCodeFile file)
         {
-            this.CurrentStatus  = DebugStatus.Paused;
-            this.CurrentAddress = e.Address.Value; // NB: must be physical
-            // Update Current---- Properties
-            this.UpdateCurrent(e.Address.Value, e.Assembly);
-            // Fire public event
-            if (this.Stepped != null) this.Stepped(this, e);
+            if (this.CurrentObjectFile == file)
+            {
+                this.CurrentObjectFile = null;
+            }
+            this.objectFiles.Remove(file);
         }
 
-        void AssertPaused()
+        public void IncludeObjectFile(ObjectCodeFile file)
         {
-            if (this.CurrentStatus != DebugStatus.Paused) 
-                throw new DebuggerNotPausedException();
+            if (!this.objectFiles.Contains(file))
+            {
+                this.objectFiles.Add(file);
+            }
         }
 
-        void UpdateCurrent(long address, AssemblyLine line)
+        public byte[] ReadRegister(string register)
         {
-            this.CurrentAddress    = address;
+            this.AssertPaused();
+
+            // Check access before reading
+            if (this.Registers.CanRead(register))
+            {
+                return this.connector.ReadRegister(this.Registers[register]);
+            }
+            else throw new InvalidOperationException();
+        }
+
+        public void BeginReadMemory(Address address, int length, Action<byte[]> callback)
+        {
+            this.AssertPaused();
+            this.connector.BeginReadMemory(address, length, callback);
+        }
+
+        public void SetBreakpoint(Breakpoint breakpoint)
+        {
+            this.connector.SetBreakpoint(breakpoint);
+        }
+
+        public void Step()
+        {
+            this.Step(1);
+        }
+        public void Step(int count)
+        {
+            this.AssertPaused();
+
+            this.CurrentStatus = DebugStatus.Executing;
+            this.connector.Step(1);
+        }
+
+        public void WriteMemory(Address address, byte[] data)
+        {
+            this.AssertPaused();
+
+            throw new NotImplementedException();
+        }
+
+        public void WriteRegister(string register, byte[] data)
+        {
+            this.AssertPaused();
+
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Called when Bochs is stepped.
+        /// </summary>
+        private void OnBochsStepped(Address address, AssemblyLine assembly)
+        {
+            // Update status
+            this.CurrentStatus  = DebugStatus.Suspended;
+            this.CurrentAddress = address.Value;
+
+            // Give default values for current props
             this.CurrentBreakpoint = null;
             this.CurrentObjectFile = null;
+            this.CurrentCodeUnit   = this.liveCodeUnit;
 
             // Update breakpoint
             foreach (Breakpoint bp in this.breakpoints)
@@ -165,114 +224,57 @@ namespace DebugOS.Bochs
             }
 
             // Update object file
-            foreach (ObjectCodeFile file in this.codeFiles)
+            foreach (ObjectCodeFile file in this.objectFiles)
             {
-                if (file.Sections[0].LoadMemoryAddress <= address &&
-                    file.Sections[0].LoadMemoryAddress + file.Size > address)
+                if (file.Sections[0].LoadMemoryAddress <= address.Value &&
+                    file.Sections[0].LoadMemoryAddress + file.Size > address.Value)
                 {
                     this.CurrentObjectFile = file; break;
                 }
             }
 
-            // If object file found, try ant load current code unit
-            if (this.CurrentObjectFile != null) {
-                this.CurrentCodeUnit = this.CurrentObjectFile.GetCode((uint)address);
-            }
-            // Use live code unit otherwise
-            if (this.CurrentObjectFile == null || this.CurrentCodeUnit == null) 
+            // If object file found, try and load current code unit
+            if (this.CurrentObjectFile != null)
             {
-                var liveUnit = this.CurrentCodeUnit as LiveCodeUnit; // Keep previous live code unit
-                if (liveUnit == null) this.CurrentCodeUnit = liveUnit = new LiveCodeUnit();
-
-                liveUnit.AddAssemblyLine(line);
+                this.CurrentCodeUnit = this.CurrentObjectFile.GetCode(address.Value);
             }
+            // Otherwise, use the live code unit
+            else this.liveCodeUnit.AddAssemblyLine(assembly);
+
+            // Fire the event
+            if (this.Suspended != null) this.Suspended(this, null);
         }
 
-
-        public void Step()
+        /// <summary>
+        /// Called when Bochs is terminated.
+        /// </summary>
+        private void OnBochsTerminated()
         {
-            this.AssertPaused();
-            this.connector.Step(1);
-        }
-        public void Step(int Count)
-        {
-            this.AssertPaused();
-            this.connector.Step(Count);
-        }
-
-        public void StepOver()
-        {
-            this.AssertPaused();
-            // TODO: step over current code line
-            throw new NotImplementedException();
-        }
-
-        public void Continue()
-        {
-            this.AssertPaused();
-            this.connector.Continue();
-            if (this.Continued != null) this.Continued(this, null);
-        }
-
-        public void Disconnect()
-        {
-            if (this.CurrentStatus == DebugStatus.Paused) {
-                this.connector.Quit();
-            }
-            else if (this.CurrentStatus == DebugStatus.Executing) {
-                this.bochsProcess.Kill();
-            }
+            // Update status
             this.CurrentStatus = DebugStatus.Disconnected;
+
+            // Fire the event
+            if (this.Disconnected != null)
+            {
+                this.Disconnected(this, null);
+            }
         }
 
-        public void SetBreakpoint(Breakpoint Breakpoint)
+        /// <summary>
+        /// Called when one or more registers have been refreshed.
+        /// </summary>
+        private void OnRegistersUpdated(RegistersChangedEventArgs e)
         {
-            this.AssertPaused();
+            Register[] regs = this.connector.AvailableRegisters;
 
-            if (Breakpoint.Address.Type == AddressType.Physical) {
-                this.connector.SetPhysicalBreakpoint(Breakpoint.Address.Value);
+            // Update the register listing
+            this.Registers = new RegisterSet(regs, regs.Select((_)=>true).ToArray(), 
+                new bool[regs.Length]);
+
+            if (this.RefreshRegisters != null)
+            {
+                this.RefreshRegisters(this, e);
             }
-            else if (Breakpoint.Address.Type == AddressType.Virtual) {
-                this.connector.SetLinearBreakpoint(Breakpoint.Address.Value);
-            }
-            else if (Breakpoint.Address.Type == AddressType.Logical) {
-                throw new NotImplementedException();
-            }
-
-            int index = this.breakpoints.Count;
-            this.breakpoints.Add(Breakpoint);
-
-            if (!Breakpoint.IsActive) {
-                this.connector.DisableBreakpoint(index);
-            }
-        }
-
-        public void ClearBreakpoint(Breakpoint Breakpoint)
-        {
-            this.AssertPaused();
-
-            int index = this.breakpoints.IndexOf(Breakpoint);
-            if (index == -1) throw new Exception("Unknown breakpoint, cannot clear");
-
-            this.breakpoints[index].IsActive = false;
-            this.connector.ClearBreakpoint(index);
-        }
-
-        public ObjectCodeFile[] IncludedObjectFiles
-        {
-            get { return this.codeFiles.ToArray(); }
-        }
-
-        public void IncludeObjectFile(ObjectCodeFile file) {
-            this.codeFiles.Add(file);
-        }
-
-        public void ExcludeObjectFile(ObjectCodeFile file)
-        {
-            if (this.CurrentObjectFile == file) {
-                this.CurrentObjectFile = null;
-            }
-            this.codeFiles.Remove(file);
         }
     }
 }

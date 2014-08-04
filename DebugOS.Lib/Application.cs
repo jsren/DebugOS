@@ -7,9 +7,28 @@ namespace DebugOS
         private static IDebugger debugger;
         private static DebugSession session;
 
-
         public static event Action SessionChanged;
         public static event Action DebuggerChanged;
+        
+        public static ArgumentSet Arguments { get; private set; }
+
+
+        static Application()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+
+            if (args.Length < 2)
+            {
+                Arguments = new ArgumentSet(new string[0]);
+            }
+            else
+            {
+                string[] tmp = new string[args.Length - 1];
+                Array.Copy(args, 1, tmp, 0, tmp.Length);
+
+                Arguments = new ArgumentSet(tmp);
+            }
+        }
 
 
         public static DebugSession Session
@@ -19,7 +38,7 @@ namespace DebugOS
             set
             {
                 if (debugger != null && debugger.CurrentStatus != DebugStatus.Disconnected) {
-                    throw new InvalidOperationException("Cannot change session while debugging in progress");
+                    throw new InvalidOperationException("Cannot change session while debugging in progress.");
                 }
                 else session = value;
 
@@ -34,15 +53,11 @@ namespace DebugOS
             set
             {
                 if (debugger != null && debugger.CurrentStatus != DebugStatus.Disconnected) {
-                    throw new InvalidOperationException("Cannot change debugger while debugging in progress");
+                    throw new InvalidOperationException("Cannot change debugger while debugging in progress.");
                 }
                 else
                 {
-                    if (session != null) {
-                        session.Debugger = value.Name;
-                    }
                     debugger = value;
-
                     if (DebuggerChanged != null) DebuggerChanged();
                 }
             }

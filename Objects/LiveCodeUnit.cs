@@ -34,7 +34,7 @@ namespace DebugOS
         public void AddAssemblyLine(AssemblyLine line)
         {
             this.lines.Add(new CodeLine(line.MachineCode.Length, 
-                line.Offset, "", new AssemblyLine[] { line }));
+                line.Offset, -1, "", new AssemblyLine[] { line }));
         }
     }
 }

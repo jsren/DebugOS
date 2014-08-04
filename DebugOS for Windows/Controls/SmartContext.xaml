@@ -1,0 +1,23 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:local="clr-namespace:DebugOS"
+	mc:Ignorable="d"
+	x:Class="DebugOS.SmartContext"
+	x:Name="UserControl" BorderThickness="2" VerticalAlignment="Top" MaxHeight="200">
+	<UserControl.Background>
+		<SolidColorBrush Color="{DynamicResource Background}"/>
+	</UserControl.Background>
+	<UserControl.BorderBrush>
+		<SolidColorBrush Color="{DynamicResource PrimaryColour}"/>
+	</UserControl.BorderBrush>
+
+	<ScrollViewer Padding="10" VerticalScrollBarVisibility="Auto">
+
+		<StackPanel x:Name="LayoutRoot" VerticalAlignment="Top">
+			<local:AddressContextItem VerticalAlignment="Top"/>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

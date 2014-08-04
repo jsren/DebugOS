@@ -1,0 +1,41 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:DebugOS"
+	x:Class="DebugOS.ConfigurationDialog"
+	x:Name="Window"
+	Title="Configure DebugOS"
+	Width="640" Height="480">
+
+	<Grid x:Name="LayoutRoot">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="189*"/>
+			<ColumnDefinition Width="443*"/>
+		</Grid.ColumnDefinitions>
+		<StackPanel Background="#FFD6D6D6" Margin="0">
+			<local:ConfigCategoryItem Height="38"/>
+			<Grid Height="38" Background="#FFF4F4F5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="21*"/>
+					<ColumnDefinition Width="73*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Left" Margin="6,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" Foreground="#FF4D4D4D" Grid.Column="1"><Run Language="en-gb" Text="Extensions"/></TextBlock>
+			</Grid>
+			<Grid Height="38" Background="#FFF4F4F5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="21*"/>
+					<ColumnDefinition Width="73*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Left" Margin="6,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" Foreground="#FF4D4D4D" Grid.Column="1"><Run Language="en-gb" Text="Tools &amp; Directories"/></TextBlock>
+			</Grid>
+			<Grid Height="38" Background="#FFF4F4F5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="21*"/>
+					<ColumnDefinition Width="73*"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock HorizontalAlignment="Left" Margin="6,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" Foreground="#FF4D4D4D" Grid.Column="1"><Run Language="en-gb" Text="Feedback"/></TextBlock>
+			</Grid>
+		</StackPanel>
+		<ContentPresenter x:Name="pageContent" Grid.Column="1" HorizontalAlignment="Left" Height="450" VerticalAlignment="Top" Width="443"/>
+	</Grid>
+</Window>

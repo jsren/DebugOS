@@ -5,13 +5,14 @@ namespace DebugOS
     public enum RegisterType
     {
         GeneralPurpose,
-        BasePointer,
+        FramePointer,
         StackPointer,
         InstructionPointer,
+        ReturnAddress,
         Flags,
         Segment,
         Control,
-        Descriptor,
+        Extended,
         ModelSpecific,
         Debug,
         Other

@@ -1,31 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace DebugOS
 {
-	/// <summary>
-	/// Interaction logic for RegisterControl.xaml
-	/// </summary>
+    /// <summary>
+    /// A user interface control representing a processor register.
+    /// </summary>
 	public partial class RegisterItem : UserControl
 	{
-		public RegisterItem() {
+		public RegisterItem()
+        {
 			this.InitializeComponent();
 		}
 
-        public RegisterItem(string name, byte[] value, int width)
+        public RegisterItem(string name, byte[] value) : this()
         {
-            this.InitializeComponent();
-
             this.nameText.Text = name;
             this.SetValue(value);
         }
@@ -34,10 +24,16 @@ namespace DebugOS
         {
             StringBuilder text = new StringBuilder();
 
-            for (int i = value.Length - 1; i != -1; i--)
+            // Reverse for display
+            Array.Reverse(value);
+
+            for (int i = 0; i < value.Length; i++)
             {
-                text.Append(Utils.GetHexString(value[i], 2));
-                text.Append(' ');
+                // Add each byte to the string
+                text.Append(Utils.GetHexString(value[i], fixedPlaces: 2, prefix: false));
+
+                // Add a space if not the last item
+                if (i != value.Length - 1) text.Append(' ');
             }
             this.valueText.Text = text.ToString();
         }

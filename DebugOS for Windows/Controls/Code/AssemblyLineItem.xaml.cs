@@ -1,16 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace DebugOS
 {
@@ -20,7 +10,9 @@ namespace DebugOS
 	public partial class AssemblyLineItem : UserControl
 	{
 		AssemblyLine line;
+        Breakpoint breakpoint;
 
+        
         public bool IsCurrentItem { get; private set; }
 		
 
@@ -54,6 +46,69 @@ namespace DebugOS
                 currentGrid.Visibility = System.Windows.Visibility.Collapsed;
                 this.IsCurrentItem = false;
             }
+        }
+
+        private void OnBreakpointClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (this.Breakpoint == null)
+            {
+                this.Breakpoint = new Breakpoint(true, this.line.Offset);
+            }
+            else
+            {
+                this.Breakpoint = null;
+            }
+        }
+
+        public Breakpoint Breakpoint
+        {
+            get { return this.breakpoint; }
+
+            set
+            {
+                // The breakpoint has been cleared
+                if (value == null && this.breakpoint != null)
+                {
+                    try {
+                        Application.Debugger.ClearBreakpoint(this.breakpoint);
+                    }
+                    finally
+                    {
+                        this.breakpoint = null;
+                        this.breakpointFill.Visibility = System.Windows.Visibility.Collapsed;
+                    }
+                }
+                // A new breakpoint has been set
+                else
+                {
+                    if (this.line.MachineCode.Length != 0)
+                    {
+                        try
+                        {
+                            Application.Debugger.SetBreakpoint(this.breakpoint = value);
+                            this.breakpointFill.Visibility = System.Windows.Visibility.Visible;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("[ERROR] Error setting breakpoint at '{0}': {1}",
+                                Utils.GetHexString((ulong)this.line.Offset, prefix: true), e);
+
+                            this.breakpoint = null;
+                            this.breakpointFill.Visibility = System.Windows.Visibility.Collapsed;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void OnBPHitTestEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            this.breakpointOutline.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void OnBPHitTestLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            this.breakpointOutline.Visibility = System.Windows.Visibility.Collapsed;
         }
 	}
 }

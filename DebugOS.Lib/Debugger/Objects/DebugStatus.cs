@@ -4,7 +4,7 @@ namespace DebugOS
     public enum DebugStatus
     {
         Disconnected,
-        Paused,
+        Suspended,
         Executing
     }
 }

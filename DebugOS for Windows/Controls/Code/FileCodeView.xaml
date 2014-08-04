@@ -1,0 +1,23 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.FileCodeView"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="480">
+
+	<Grid x:Name="LayoutRoot">
+        <ScrollViewer x:Name="codeScroll" Margin="0">
+            <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        		<Rectangle x:Name="currentGrid" Stroke="#FF636363" Margin="0" VerticalAlignment="Top" Height="0">
+        			<Rectangle.Fill>
+        				<SolidColorBrush Color="#99628BAE"/>
+        			</Rectangle.Fill>
+        		</Rectangle>
+        		<StackPanel x:Name="codeStack"  Orientation="Vertical" Width="Auto" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" />
+        	</Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

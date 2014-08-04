@@ -11,7 +11,6 @@ namespace DebugOS
         private bool showAsm;
         private CodeLine code;
 
-        public Breakpoint Breakpoint { get; set; }
         public bool IsCurrentItem { get; private set; }
 		
 		public CodeLineItem(CodeLine line, bool showAssembly = true)
@@ -23,19 +22,6 @@ namespace DebugOS
 
             this.ShowAssembly = showAssembly;
 
-            // Load breakpoint if one exists
-            if (line.Assembly.Length != 0)
-            {
-                foreach (Breakpoint bp in Application.Debugger.Breakpoints)
-                {
-                    if (bp.Address == line.Assembly[0].Offset)
-                    {
-                        this.Breakpoint = bp;
-                        break;
-                    }
-                }
-            }
-
             // Update the text
             this.codeText.Text = line.Text;
 			
@@ -43,10 +29,6 @@ namespace DebugOS
 			{
 				this.AddItem(new AssemblyLineItem(line.Assembly[i]));
 			}
-
-            if (this.Breakpoint != null && this.Breakpoint.IsActive) {
-                this.breakpoint_fill.Visibility = System.Windows.Visibility.Visible;
-            }
 		}
 
         public bool ShowAssembly
@@ -85,23 +67,6 @@ namespace DebugOS
 			this.childrenStack.Children.Add(item);
 		}
 
-        private void OnBreakpointClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (this.Breakpoint == null)
-            {
-                if (this.code.Assembly.Length != 0)
-                {
-                    this.Breakpoint = new Breakpoint(true, this.code.Assembly[0].Offset);
-                    Application.Debugger.SetBreakpoint(this.Breakpoint);
-                    this.breakpoint_fill.Visibility = System.Windows.Visibility.Visible;
-                }
-            }
-            else
-            {
-                Application.Debugger.ClearBreakpoint(this.Breakpoint);
-                this.Breakpoint = null;
-                this.breakpoint_fill.Visibility = System.Windows.Visibility.Collapsed;
-            }
-        }
+        
     }
 }

@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace DebugOS
 {
@@ -29,25 +19,30 @@ namespace DebugOS
         {
             if (Application.Debugger != null)
             {
-                Application.Debugger.RefreshRegister += (s, r) =>
+                Application.Debugger.RefreshRegisters += (s, r) =>
                 {
                     this.Dispatcher.Invoke((Action)delegate
                     {
-                        bool addRegister = true;
-
-                        foreach (RegisterItem ctrl in this.registerWrap.Children)
+                        foreach (string regName in r.AffectedRegisters)
                         {
-                            if (ctrl.nameText.Text == r.Register.Name)
+                            bool addRegister = true;
+
+                            foreach (RegisterItem ctrl in this.registerWrap.Children)
                             {
-                                ctrl.SetValue(r.Value);
-                                addRegister = false;
-                                break;
+                                // If we've the register already displayed, just update the value
+                                if (StringComparer.CurrentCultureIgnoreCase.Equals(ctrl.nameText.Text, regName))
+                                {
+                                    ctrl.SetValue(Application.Debugger.ReadRegister(regName));
+                                    addRegister = false;
+                                    break;
+                                }
                             }
-                        }
-
-                        if (addRegister)
-                        {
-                            this.registerWrap.Children.Add(new RegisterItem(r.Register.Name, r.Value, r.Register.Width));
+                            // Add new as necessary
+                            if (addRegister)
+                            {
+                                this.registerWrap.Children.Add(new RegisterItem(regName, 
+                                    Application.Debugger.ReadRegister(regName)));
+                            }
                         }
                     });
                 };

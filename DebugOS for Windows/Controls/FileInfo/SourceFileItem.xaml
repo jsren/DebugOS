@@ -1,0 +1,18 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.SourceFileItem"
+	x:Name="UserControl" VerticalAlignment="Top" Background="#00000000">
+
+	<Grid x:Name="LayoutRoot" HorizontalAlignment="Left" VerticalAlignment="Top">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="39"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<Image Margin="6" Source="/dbgos;component/Icons/document.png"/>
+		<TextBlock x:Name="nameText" HorizontalAlignment="Left" Margin="4,0" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Column="1"><Run Language="en-gb" Text="Code Source"/></TextBlock>
+	</Grid>
+</UserControl>

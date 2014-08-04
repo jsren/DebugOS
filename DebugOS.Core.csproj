@@ -50,8 +50,15 @@
   <ItemGroup>
     <Compile Include="Bochs\BochsConnector.cs" />
     <Compile Include="Bochs\BochsDebugger.cs" />
+    <Compile Include="Bochs\BochsRegSet.cs" />
     <Compile Include="Bochs\IBochsRequest.cs" />
     <Compile Include="Bochs\Requests\ReadMemoryRequest.cs" />
+    <Compile Include="Extensions\SessionExtension.cs" />
+    <Compile Include="GDB\Formats\arm11.cs" />
+    <Compile Include="GDB\Formats\i386.cs" />
+    <Compile Include="GDB\GDBDebugger.cs" />
+    <Compile Include="GDB\Requests\ReadRegistersRequest.cs" />
+    <Compile Include="GDB\Requests\Request.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="ELF\ELFBinary.cs" />
     <Compile Include="ELF\ElfHeader.cs" />

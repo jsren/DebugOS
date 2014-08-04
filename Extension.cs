@@ -74,19 +74,34 @@ namespace DebugOS
         }
 
         /// <summary>
+        /// Gets the name of the extension's debugger if one exists.
+        /// </summary>
+        public string DebuggerName
+        {
+            get
+            {
+                if (this.HasDebugger)
+                {
+                    return ((IDebuggerExtension)this.Interface).DebuggerName;
+                }
+                else throw new InvalidOperationException();
+            }
+        }
+
+        /// <summary>
         /// Attempts to load the extension's debugger if one exists.
         /// </summary>
         /// <exception cref="System.InvalidOperationException">
         /// Thrown if the extension is not an IDebuggerExtension.
         /// </exception>
-        /// <returns>A debugger.</returns>
+        /// <returns>An instance of an IDebugger.</returns>
         public IDebugger LoadDebugger()
         {
             if (this.HasDebugger)
             {
                 return ((IDebuggerExtension)this.Interface).LoadDebugger();
             }
-            throw new InvalidOperationException();
+            else throw new InvalidOperationException();
         }
     }
 }

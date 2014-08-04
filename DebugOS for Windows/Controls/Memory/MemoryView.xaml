@@ -1,0 +1,22 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:local="clr-namespace:DebugOS"
+	xmlns:Controls="clr-namespace:System.Windows.Controls"
+	mc:Ignorable="d"
+	x:Class="DebugOS.MemoryView"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="480">
+
+	<Grid x:Name="LayoutRoot" Background="White">
+		<Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="172" Margin="135,124,0,0" Stroke="#FF939393" VerticalAlignment="Top" Width="352"/>
+		<TextBlock HorizontalAlignment="Left" Height="19.334" Margin="149.333,137.333,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="111.334"><Run Language="en-gb" Text="New Memory View"/></TextBlock>
+		<Controls:FormattedTextBox HorizontalAlignment="Left" Height="21.333" Margin="302.667,178.667,0,0" TextWrapping="Wrap" Text="123" VerticalAlignment="Top" Width="150" FormatPattern="$[\da-fA-F]+^"/>
+		<TextBlock HorizontalAlignment="Left" Height="19.334" Margin="149.333,181.667,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="82.334"><Run Language="en-gb" Text="Start Address"/></TextBlock>
+		<TextBlock HorizontalAlignment="Left" Height="19.334" Margin="149.333,206.001,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="82.334"><Run Language="en-gb" Text="End Address"/></TextBlock>
+		<Controls:FormattedTextBox HorizontalAlignment="Left" Height="21.333" Margin="302.667,203.001,0,0" TextWrapping="Wrap" Text="123" VerticalAlignment="Top" Width="150" FormatPattern="$[\da-fA-F]+^"/>
+		<TextBlock HorizontalAlignment="Left" Height="19.334" Margin="149.333,240.001,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="82.334"><Run Language="en-gb" Text="End Address"/></TextBlock>
+	</Grid>
+</UserControl>

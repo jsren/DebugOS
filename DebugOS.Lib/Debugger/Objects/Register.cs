@@ -1,45 +1,50 @@
-﻿
+﻿using System;
+
 namespace DebugOS
 {
-    public struct Register
+    [Serializable]
+    public class Register : IEquatable<Register>
     {
         public string Name { get; private set; }
-
         public int Width { get; private set; }
         public RegisterType Type { get; private set; }
 
-        public bool CanRead { get; private set; }
-        public bool CanWrite { get; private set; }
-
-        public Register(string Name, int Width) : this()
+        public Register(string Name, int Width)
         {
             this.Name  = Name;
             this.Width = Width;
             this.Type  = RegisterType.GeneralPurpose;
-
-            this.CanRead  = true;
-            this.CanWrite = true;
         }
-        public Register(string Name, int Width, RegisterType Type) : this()
+        public Register(string Name, int Width, RegisterType Type)
         {
             this.Name  = Name;
             this.Width = Width;
             this.Type  = Type;
-
-            this.CanRead  = true;
-            this.CanWrite = true;
         }
 
-        /*public override bool Equals(object obj)
+        public bool Equals(Register other)
         {
-            if (obj is Register)
-            {
-                Register r = (Register)obj;
+            return StringComparer.CurrentCultureIgnoreCase.Equals(this.Name, other.Name)
+                && this.Width == other.Width
+                && this.Type  == other.Type;
+        }
 
-                return (r.CanRead == this.CanRead && r.CanWrite == this.CanWrite && 
-                    r.Name == this.Name && r.Type == this.Type && r.Width == this.Width);
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+
+            Register other = obj as Register;
+            if (other != null)
+            {
+                return this.Equals(other);
             }
-            else return base.Equals(obj);
-        }*/
+            else return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Name.GetHashCode() + this.Width + Type.GetHashCode();
+        }
+
     }
 }

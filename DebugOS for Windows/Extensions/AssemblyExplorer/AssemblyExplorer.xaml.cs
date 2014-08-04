@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Linq;
+using System.Text;
 
 namespace DebugOS.Extensions
 {
@@ -86,6 +87,21 @@ namespace DebugOS.Extensions
                     if (!assemblies.Contains(assembly)) {
                         Application.Debugger.ExcludeObjectFile(assembly);
                     }
+                }
+
+                // Update Session Storage
+                if (Application.Session != null)
+                {
+                    StringBuilder builder = new StringBuilder();
+
+                    foreach (ObjectCodeFile assembly in assemblies)
+                    {
+                        builder.Append(assembly.Filepath);
+                        builder.Append("*");
+                        builder.Append(assembly.ActualLoadAddress);
+                        builder.Append("?");
+                    }
+                    Application.Session.Properties["DebugOS.LoadedAssemblies"] = builder.ToString();
                 }
             }
             else

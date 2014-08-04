@@ -12,11 +12,11 @@
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
 			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
-		<ContentPresenter x:Name="content" Margin="0" Grid.Row="2"/>
-		<ScrollViewer x:Name="tabScroll" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Template="{DynamicResource TabControlScroller}" >
+		<ContentPresenter x:Name="content" Margin="0" Grid.Row="1"/>
+		<ScrollViewer x:Name="tabScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Template="{DynamicResource TabControlScroller}" >
 			<StackPanel x:Name="tabStack" Orientation="Horizontal" Height="30" HorizontalAlignment="Left">
 			</StackPanel>
 		</ScrollViewer>

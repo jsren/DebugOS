@@ -1,6 +1,6 @@
 ﻿/* BochsExtension.cs - (c) James S Renwick 2014
  * --------------------------------------------
- * Version 1.3.0
+ * Version 1.3.2
  */
 using System;
 using DebugOS.Bochs;
@@ -20,7 +20,9 @@ namespace DebugOS.Extensions
         /// <summary>Gets the name of the extension.</summary>
         public string Name { get { return "Bochs Debugger"; } }
 
-        
+        /// <summary>Gets the name of the debugger.</summary>
+        public string DebuggerName { get { return "Bochs Internal Debugger"; } }
+
         /// <summary>
         /// Performs extension initialisation.
         /// 
@@ -30,16 +32,11 @@ namespace DebugOS.Extensions
         /// <param name="args"></param>
         public void Initialise(string[] args)
         {
+            Application.SessionChanged += OnSessionChanged;
+
             // Check for bochs args
-            for (int i = 0; i < args.Length - 1; i++)
-            {
-                if (args[i] == "-bxrc") {
-                    configPath = args[i + 1];
-                }
-                if (args[i] == "-bxpath") {
-                    bochsPath = args[i + 1];
-                }
-            }
+            configPath = Application.Arguments["-bxrc"];
+            bochsPath  = Application.Arguments["-bxpath"];
 
             // If not given, try to get bochs path from env. var
             bochsPath = bochsPath ?? System.Environment.GetEnvironmentVariable("BOCHSHOME");
@@ -48,6 +45,15 @@ namespace DebugOS.Extensions
             if (System.IO.Directory.Exists(bochsPath))
             {
                 bochsPath = System.IO.Path.Combine(bochsPath, "bochsdbg.exe");
+            }
+        }
+
+        void OnSessionChanged()
+        {
+            if (Application.Session != null)
+            {
+                configPath = configPath ?? Application.Session.Properties["BochsDebugger.ConfigPath"];
+                bochsPath  = bochsPath  ?? Application.Session.Properties["BochsDebugger.BochsPath"];
             }
         }
 
@@ -81,9 +87,8 @@ namespace DebugOS.Extensions
                 }
             }
 
-            Application.Session.Properties["BochsDebugger.BochsPath"]  = bochsPath;
             Application.Session.Properties["BochsDebugger.ConfigPath"] = configPath;
-
+            Application.Session.Properties["BochsDebugger.BochsPath"]  = bochsPath;
             return new BochsDebugger();
         }
 
@@ -93,21 +98,22 @@ namespace DebugOS.Extensions
         /// </summary>
         private string ShowDialog(string title, string filter)
         {
-            var dialog = new OpenFileDialog()
+            using (var dialog = new OpenFileDialog()
             {
                 CheckFileExists = true,
                 Multiselect     = false,
                 Filter          = filter,
                 FilterIndex     = 0
-            };
-
-            DialogResult result = dialog.ShowDialog();
-
-            if (result == DialogResult.OK || result == DialogResult.Yes)
+            })
             {
-                return dialog.FileName;
+                DialogResult result = dialog.ShowDialog();
+
+                if (result == DialogResult.OK || result == DialogResult.Yes)
+                {
+                    return dialog.FileName;
+                }
+                else return null;
             }
-            else return null;
         }
     }
 }

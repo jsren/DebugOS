@@ -1,0 +1,27 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:Controls="clr-namespace:System.Windows.Controls"
+	x:Class="DebugOS.GDBConfiguration"
+	x:Name="Window"
+	Title="GDBConfiguration"
+	Width="640" Height="480" ResizeMode="CanMinimize">
+
+	<Grid x:Name="LayoutRoot">
+		<Grid.Background>
+			<SolidColorBrush Color="{DynamicResource Background}"/>
+		</Grid.Background>
+		<Image Margin="43,26,490,325" Source="/dbgos;component/Icons/gdb.png" Stretch="Fill"/>
+		<TextBlock HorizontalAlignment="Left" Margin="182,41,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="29.333">
+			<TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource DialogTitle}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Configure GNU Debugger"/></TextBlock>
+		<TextBlock HorizontalAlignment="Left" Margin="43,148,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="14.667" Foreground="#FF4D4D4D"><Run Language="en-gb" Text="The debugger connects to an active GDB server stub, which is typically part of a virtual machine or emulator. "/><LineBreak/><Run Language="en-gb"/><LineBreak/><Run Language="en-gb" Text="Please enter the network connection details of the GDB server to continue."/></TextBlock>
+		<Button Content="Continue" HorizontalAlignment="Left" Height="26" Margin="506.16,403,0,0" VerticalAlignment="Top" Width="94" Click="OnContinue"/>
+		<TextBox x:Name="hostText" HorizontalAlignment="Left" Height="25" Margin="43,280,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="474.767" Padding="25,1,1,1" Text="127.0.0.1"/>
+		<TextBlock HorizontalAlignment="Left" Height="23" Margin="46.667,283,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="24"><Run Language="en-gb" Text="tcp:"/></TextBlock>
+		<TextBlock HorizontalAlignment="Left" Margin="43,259,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Remote host name or IP  "/><Run Foreground="#FF747474" Language="en-gb" Text="(e.g. 127.0.0.1)"/></TextBlock>
+		<Controls:FormattedTextBox x:Name="portText" HorizontalAlignment="Left" Margin="43,342,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="149" FormatPattern="^\d+$" Text="2200"/>
+		<TextBlock HorizontalAlignment="Left" Margin="43,321.04,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Remote port "/><Run Foreground="#FF747474" Language="en-gb" Text=" (e.g. 2200)"/></TextBlock>
+	</Grid>
+</Window>

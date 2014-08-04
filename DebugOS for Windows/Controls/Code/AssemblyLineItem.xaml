@@ -6,7 +6,9 @@
 	mc:Ignorable="d"
 	x:Class="DebugOS.AssemblyLineItem"
 	x:Name="UserControl"
-	d:DesignWidth="278" d:DesignHeight="55.333">
+	d:DesignWidth="278" d:DesignHeight="55.333"
+    MouseEnter="OnBPHitTestEnter" MouseLeave="OnBPHitTestLeave" Background="#00000000"
+    >
     <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,7 +18,6 @@
             <ColumnDefinition Width="41"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Rectangle Margin="0" Grid.ColumnSpan="2" Grid.RowSpan="2" Fill="#00C14242"/>
         <Grid Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -28,6 +29,9 @@
             <TextBlock x:Name="operands" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="1" FontFamily="Consolas"/>
             <TextBlock x:Name="meta" HorizontalAlignment="Left" Margin="5,5,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Column="2" Foreground="#FF1A635F" FontFamily="Consolas"/>
         </Grid>
-        <Ellipse x:Name="breakpoint" Fill="#51DEDEDE" HorizontalAlignment="Center" Height="18" Margin="0,4,0,0" Stroke="#FF787878" VerticalAlignment="Top" Width="18" ToolTip="Breakpoint" Visibility="Collapsed"/>
+        <Grid Margin="0,0.5,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" MouseLeftButtonUp="OnBreakpointClick" Background="#00000000">
+            <Ellipse x:Name="breakpointOutline" Fill="#51DEDEDE" Stroke="#FF787878" ToolTip="Breakpoint"  Width="18" Height="18" Visibility="Collapsed"/>
+            <Ellipse x:Name="breakpointFill" Fill="#7FFF0000" Stroke="Red" ToolTip="Breakpoint" Width="18" Height="18" Visibility="Collapsed"/>
+        </Grid>
     </Grid>
 </UserControl>

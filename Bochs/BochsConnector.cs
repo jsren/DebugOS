@@ -1,20 +1,25 @@
-﻿using DebugOS.Bochs.Requests;
+﻿/* BochsConnector.cs (c) James S Renwick 2013
+ * ------------------------------------------
+ * Version 1.6.6
+ */
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using DebugOS.Bochs.Requests;
 
 namespace DebugOS.Bochs
 {
-    internal delegate void AddressEventHandler(Address address);
-
     internal sealed partial class BochsConnector
     {
         /* STDOUT Regexes */
         /* ========================================================================================= */
-        internal const string addr = @"0x[\da-fA-F_]+";
+        internal const string addr = @"(?:0x)?[\da-fA-F_]+";
         static readonly Regex counterRegex  = new Regex(@"Next at t=.*");
         static readonly Regex registerRegex = new Regex(@"(\w+?)\s*: (" + addr + ")");
         static readonly Regex stepRegex     = new Regex(@"\(.*\) \[(" + addr + @")\][^:]*:[^:]*:\s*(.*)\s*; (.*)");
@@ -22,19 +27,15 @@ namespace DebugOS.Bochs
         
         /* ========================================================================================= */
 
-        public event EventHandler Terminated;
-        public event AddressEventHandler BreakpointHit;
-        public event EventHandler<SteppedEventArgs> Stepped;
-        public event EventHandler<RegisterUpdateEventArgs> RegisterUpdated;
-
+        public event Action                            Terminated;
+        public event Action<Address, AssemblyLine>     Stepped;
+        public event Action<MemoryReadEventArgs>       MemoryRead;
+        public event Action<RegistersChangedEventArgs> RegisterUpdated;
         
 
-        // Holds the bochs process with which to communicate
-        private Process bochsProcess;
-        // Holds the current set of registers
-        public Dictionary<Register, byte[]> registers;
-        // Holds the current queue of async requests
-        private Queue<IBochsRequest> requests;
+        private Process                      bochsProcess;
+        private Queue<IBochsRequest>         requests;
+        private Dictionary<Register, byte[]> registers;
 
         /// <summary>
         /// Gets the handle of the current BOCHS process' main window.
@@ -43,18 +44,42 @@ namespace DebugOS.Bochs
         { 
             get 
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000); // Sleep for a bit to improve chances
                 bochsProcess.Refresh();
                 return new HandleRef(bochsProcess, bochsProcess.MainWindowHandle);
             } 
         }
 
-        public BochsConnector(Process bochsProcess)
+        /// <summary>
+        /// Creates a new Bochs connector.
+        /// </summary>
+        public BochsConnector(string bochsPath, string configPath)
         {
-            this.requests     = new Queue<IBochsRequest>();
-            this.registers    = new Dictionary<Register, byte[]>();
-            this.bochsProcess = bochsProcess;
+            // Initialise locals
+            this.requests  = new Queue<IBochsRequest>();
+            this.registers = new Dictionary<Register, byte[]>();
+
+            // Configure bochs process
+            var startInfo = new ProcessStartInfo()
+            {
+                CreateNoWindow         = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput  = true,
+                UseShellExecute        = false,
+
+                FileName  = bochsPath,
+                Arguments = "-q -f \"" + configPath + '"',
+            };
+            // Add BOCHSHOME env. var. in case the config needs it
+            startInfo.EnvironmentVariables["BOCHSHOME"] = Path.GetDirectoryName(bochsPath);
+
+            // Create bochs process
+            this.bochsProcess = new Process() { StartInfo = startInfo };
             this.bochsProcess.OutputDataReceived += handleOutputData;
+
+            // Let's-a go!
+            bochsProcess.Start();
+            bochsProcess.BeginOutputReadLine();
         }
 
         // Writes a line to bochs' stdin
@@ -67,13 +92,42 @@ namespace DebugOS.Bochs
             }
         }
 
+        private string GetAddressString(Address address)
+        {
+            if (address.Type != AddressType.Logical)
+            {
+                string output = String.Empty;
+                switch (address.Segment)
+                {
+                    case Segment.Code:
+                        output = "cs:"; break;
+                    case Segment.Data:
+                        output = "ds:"; break;
+                    case Segment.Stack:
+                        output = "ss:"; break;
+                    case Segment.Extended1:
+                        output = "es:"; break;
+                    case Segment.Extended2:
+                        output = "fs:"; break;
+                    case Segment.Extended3:
+                        output = "gs:"; break;
+                }
+                return output + address.Value.ToString();
+            }
+            else return address.Value.ToString();
+        }
+
+        public Register[] AvailableRegisters
+        {
+            get { return this.registers.Keys.ToArray(); }
+        }
+
         public void Quit()     { this.writeLine("q"); }
         public void Continue() { this.writeLine("continue"); }
 
         public void Step(int count)
         { 
             this.writeLine("step " + count.ToString());
-            this.UpdateRegisters();
         }
 
         public void UpdateRegisters()
@@ -82,14 +136,20 @@ namespace DebugOS.Bochs
             this.writeLine("sregs");
         }
 
-        public void SetPhysicalBreakpoint(long address) {
-            this.writeLine("pb " + address.ToString());
-        }
-        public void SetLinearBreakpoint(long address) {
-            this.writeLine("lb " + address.ToString());
-        }
-        public void SetVirtualBreakpoint(long address) {
-            this.writeLine("vb " + address.ToString());
+        public void SetBreakpoint(Breakpoint bp)
+        {
+            // Get the address string
+            string address = this.GetAddressString(bp.Address);
+
+            if (bp.Address.Type == AddressType.Physical)
+            {
+                this.writeLine("pb " + address);
+            }
+            else if (bp.Address.Type == AddressType.Logical)
+            {
+                this.writeLine("lb " + address);
+            }
+            else this.writeLine("vb " + address);
         }
 
         public void EnableBreakpoint(int index) {
@@ -108,46 +168,42 @@ namespace DebugOS.Bochs
             this.writeLine("modebp");
         }
 
-        public void BeginReadMemory(Address start, int length, Action<UInt32[]> callback)
+        public void Disconnect()
         {
-            if (callback == null) return;
+            this.Quit();
+            this.bochsProcess.Kill();
+        }
 
-            int carry;
-            int count = Math.DivRem(length, 4, out carry) + (carry == 0 ? 0 : 1);
+        public byte[] ReadRegister(Register register)
+        {
+            byte[] value  = this.registers[register];
+            byte[] output = new byte[value.Length];
 
-            if (count == 0)
+            value.CopyTo(output, 0);
+            return output;
+        }
+
+        public void BeginReadMemory(Address start, int length, Action<byte[]> callback)
+        {
+            // If empty callback, just return
+            if (callback == null) { return; }
+
+            // If no bytes requested, just return
+            else if (length == 0)
             {
-                callback(new UInt32[0]);
+                callback(new byte[0]);
                 return;
             }
 
+            // Build the Bochs command
             StringBuilder cmdBuilder = new StringBuilder();
             cmdBuilder.Append(start.Type == AddressType.Physical ? "xp /" : "x /");
-            cmdBuilder.Append(count);
-            cmdBuilder.Append("wx ");
+            cmdBuilder.Append(length);
+            cmdBuilder.Append("xb ");
 
-            if (start.Type == AddressType.Logical)
-            {
-                switch (start.Segment)
-                {
-                    case Segment.Code:
-                        cmdBuilder.Append("cs:"); break;
-                    case Segment.Data:
-                        cmdBuilder.Append("ds:"); break;
-                    case Segment.Stack:
-                        cmdBuilder.Append("ss:"); break;
-                    case Segment.Extended1:
-                        cmdBuilder.Append("es:"); break;
-                    case Segment.Extended2:
-                        cmdBuilder.Append("fs:"); break;
-                    case Segment.Extended3:
-                        cmdBuilder.Append("gs:"); break;
-                }
-            }
+            cmdBuilder.Append(GetAddressString(start));
 
-            cmdBuilder.Append(Utils.GetHexString((ulong)start.Value, prefix: true));
-
-            this.requests.Enqueue(new ReadMemoryRequest(count, callback));
+            this.requests.Enqueue(new ReadMemoryRequest(length, callback));
             this.writeLine(cmdBuilder.ToString());
         }
 
@@ -159,8 +215,11 @@ namespace DebugOS.Bochs
 
             // Hit end of stream - program terminated
             if (e.Data == null)
-            { 
-                if (this.Terminated != null) this.Terminated(this, null);
+            {
+                if (this.Terminated != null)
+                {
+                    ThreadPool.QueueUserWorkItem((o) => this.Terminated());
+                }
                 return;
             }
 
@@ -198,13 +257,21 @@ namespace DebugOS.Bochs
 
                 else if ((matches = registerRegex.Matches(line)).Count != 0)
                 {
+                    List<string> regsToUpdate = new List<string>();
+
                     foreach (Match m in matches)
                     {
-                        Register? r = this.tryHandleRegister(m);
+                        // Try and parse register
+                        Register reg = this.tryHandleRegister(m);
 
-                        if (r.HasValue && this.RegisterUpdated != null) {
-                            this.RegisterUpdated(this, new RegisterUpdateEventArgs(r.Value, this.registers[r.Value]));
-                        }
+                        // Add name if successful
+                        if (reg != null) regsToUpdate.Add(reg.Name);
+                    }
+                    // Fire event
+                    if (this.RegisterUpdated != null)
+                    {
+                        this.RegisterUpdated(new RegistersChangedEventArgs(
+                            regsToUpdate.ToArray()));
                     }
                 }
             }
@@ -257,9 +324,11 @@ namespace DebugOS.Bochs
                 return false;
             }
 
+            // Update regs
+            this.UpdateRegisters();
+
             // Fire event
-            if (this.Stepped != null) 
-                this.Stepped(this, new SteppedEventArgs(address, asm));
+            if (this.Stepped != null) this.Stepped(address, asm);
 
             return true;
         }
@@ -277,31 +346,38 @@ namespace DebugOS.Bochs
                 Console.WriteLine("[ERROR] Error parsing bochs break output.");
                 return false;
             }
-            // Fire event
-            if (this.BreakpointHit != null) this.BreakpointHit(address);
-
             return true;
         }
 
-        Register? tryHandleRegister(Match match)
+        Register tryHandleRegister(Match match)
         {
+            if (Application.Debugger == null) return null;
+
             try
             {
                 string name  = match.Groups[1].Value;
                 string value = match.Groups[2].Value;
 
-                RegisterType type = RegisterType.GeneralPurpose;
+                Register reg;
 
-                     if (name.EndsWith("bp")) type = RegisterType.BasePointer;
-                else if (name.EndsWith("sp")) type = RegisterType.StackPointer;
+                // Create or get existing register
+                if (!Application.Debugger.Registers.HasRegister(name))
+                {
+                    RegisterType type = RegisterType.GeneralPurpose;
 
-                Register reg = new Register(name, (value.Length - 2) / 2, type);
+                         if (name.EndsWith("bp")) type = RegisterType.FramePointer;
+                    else if (name.EndsWith("sp")) type = RegisterType.StackPointer;
+
+                    reg = new Register(name, (value.Length - 2) / 2, type);
+                }
+                else reg = Application.Debugger.Registers[name];
+
+                // Sanitize the value for easier parsing
+                value = Utils.SanitizeHex(value);
 
                 List<byte> data = new List<byte>(8);
-                for (int i = value.Length - 1; i > 2; i -= 2)
+                for (int i = value.Length - 1; i >= 1; i -= 2)
                 {
-                    if (value[i] == '_') { i += 1; continue; }
-
                     data.Add(Utils.ParseHex8(value[i-1] + "" + value[i]));
                 }
                 this.registers[reg] = data.ToArray();

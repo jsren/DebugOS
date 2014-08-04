@@ -12,19 +12,19 @@ namespace DebugOS.Bochs.Requests
             new Regex(BochsConnector.addr + @" <.*\+.*>:\s+(.*)");
 
         private int totalRead;
-        private UInt32[] dwords;
-        private Action<UInt32[]> callback;
+        private byte[] bytes;
+        private Action<byte[]> callback;
 
         public bool isComplete
         {
-            get { return this.totalRead == dwords.Length; }
+            get { return this.totalRead == bytes.Length; }
         }
         
-        public ReadMemoryRequest(int requestedDWORDs, Action<UInt32[]> callback)
+        public ReadMemoryRequest(int requestedBytes, Action<byte[]> callback)
         {
             this.totalRead = 0;
             this.callback  = callback;
-            this.dwords    = new UInt32[requestedDWORDs];
+            this.bytes     = new byte[requestedBytes];
         }
 
         public bool feedLine(string line)
@@ -38,15 +38,17 @@ namespace DebugOS.Bochs.Requests
             // TODO: Try this
             foreach (String hex in addresses)
             {
-                dwords[totalRead++] = Utils.ParseHex32(hex);
+                this.bytes[totalRead++] = Utils.ParseHex8(hex);
             }
             return true;
         }
 
         public void handleComplete()
         {
-            if (this.callback != null) {
-                callback.BeginInvoke(this.dwords, callback.EndInvoke, null);
+            // Invoke callback async
+            if (this.callback != null)
+            {
+                callback.BeginInvoke(this.bytes, callback.EndInvoke, null);
             }
         }
     }

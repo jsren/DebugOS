@@ -1,6 +1,6 @@
 ﻿/* App.xaml.cs - (c) James S Renwick 2013
  * --------------------------------------
- * Version 1.3.1
+ * Version 1.5.2
  */
 using System;
 using System.Collections.Generic;
@@ -39,6 +39,11 @@ namespace DebugOS
         public static string[] LoadedThemes { get; private set; }
 
         /// <summary>
+        /// Gets an array of the supported architectures.
+        /// </summary>
+        public static Architecture[] LoadedArchitectures { get; private set; }
+
+        /// <summary>
         /// Gets the directory in which the application is installed.
         /// </summary>
         public static DirectoryInfo ApplicationDirectory { get; private set; }
@@ -53,41 +58,6 @@ namespace DebugOS
             this.Shutdown(1);
         }
 
-        /// <summary>
-        /// Loads the debugger with the specified name. Exception neutral.
-        /// </summary>
-        /// <param name="name">The name of the debugger to load. Case sensitive.</param>
-        internal static void LoadDebugger(string name)
-        {
-            foreach (Extension extension in LoadedExtensions)
-            {
-                if (extension.Name == name && extension.HasDebugger)
-                {
-                    try { // Load debugger
-                        Application.Debugger = extension.LoadDebugger();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("[ERROR] Error loading debugger '{0}': {1}", name, e);
-                        throw; // Propagate
-                    }
-                    try
-                    {
-                        // Now load object file
-                        if (Application.Session != null && System.IO.File.Exists(Application.Session.ImageFilepath))
-                        {
-                            ObjectCodeFile obj = Loaders.ObjectFileLoader.Load(Application.Session.ImageFilepath, AssemblySyntax.Intel);
-                            Application.Debugger.IncludeObjectFile(obj);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("[ERROR] Error loading debug image '{0}': {1}", Application.Session.ImageFilepath, e);
-                        throw; // Propagate
-                    }
-                }
-            }
-        }
 
         internal static void SetTheme(string name)
         {
@@ -125,14 +95,48 @@ namespace DebugOS
             {
                 new Extension(new BochsRegLoader()),
                 new Extension(new BochsExtension()),
+                new Extension(new GDBExtension()),
+                new Extension(new QemuExtension()),
                 new Extension(new BreakpointExtension()),
                 new Extension(new ExecutionExtension()),
-                new Extension(new AssemblyExplorerExtension())
+                new Extension(new AssemblyExplorerExtension()),
+                new Extension(new SessionExtension()),
+                new Extension(new SessionViewExtension())
             };
 
             // Gets the application directory if available, otherwise defaults to the CWD.
             App.ApplicationDirectory = new DirectoryInfo(Path.GetDirectoryName(
                 Environment.GetCommandLineArgs()[0]));
+
+
+            var architectures = new List<Architecture>();
+
+            // Gets the application's architectures directory
+            string archdir = Path.Combine(ApplicationDirectory.FullName, "Architectures");
+
+            // Scan the extension directory (if it exists) for extensions to load
+            if (Directory.Exists(archdir))
+            {
+                foreach (string filename in Directory.EnumerateFiles(archdir))
+                {
+                    if (Path.GetExtension(filename) == ".xml")
+                    {
+                        try
+                        {
+                            architectures.Add(Architecture.FromStream(File.OpenRead(filename)));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("[ERROR] Error loading architecture: " + e.Message);
+                        }
+                    }
+                }
+            }
+            else try { Directory.CreateDirectory(archdir); } catch { }
+
+            // Register the loaded architectures
+            LoadedArchitectures = architectures.ToArray();
+
 
             // Gets the application's extension directory
             string extdir = Path.Combine(ApplicationDirectory.FullName, "Extensions");
@@ -181,7 +185,6 @@ namespace DebugOS
 
             App.LoadedThemes = themes.ToArray();
 
-
             // Initialise the loaded extensions
             foreach (var extension in LoadedExtensions)
             {
@@ -193,8 +196,116 @@ namespace DebugOS
                 }
             }
 
+            // Handle session change - automatically attempt to load required debugger
+            Application.SessionChanged += App.OnSessionChanged;
+
             // Call base method
             base.OnStartup(startup); 
+        }
+
+
+        /// <summary>
+        /// Handle session change - load debugger
+        /// </summary>
+        private static void OnSessionChanged()
+        {
+            if (Application.Session == null) return;
+
+            try
+            {
+                App.LoadDebugger(Application.Session.Debugger);
+            }
+            catch (Exception x)
+            {
+                try { Application.Debugger.Disconnect(); } catch { }
+
+                var msg = String.Format("An error occurred while loading debugger '{0}':\n{1}",
+                    Application.Session.Debugger, x);
+
+                MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Debugger = null;
+            }
+        }
+
+        /// <summary>
+        /// Loads the debugger with the specified name. Exception neutral.
+        /// </summary>
+        /// <param name="name">The name of the debugger to load. Case sensitive.</param>
+        internal static void LoadDebugger(string name)
+        {
+            foreach (Extension extension in LoadedExtensions)
+            {
+                if (extension.HasDebugger)
+                {
+                    try { 
+                        if (extension.DebuggerName != name) continue; 
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[ERROR] Error accessing debugger name property '{0}': {1}", extension.Name, e);
+                        continue;
+                    }
+
+                    IDebugger newDebugger;
+
+                    try { // Load debugger
+                        newDebugger = extension.LoadDebugger();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[ERROR] Error loading debugger '{0}': {1}", name, e);
+                        throw; // Propagate
+                    }
+
+                    // Now load object file(s)
+                    if (Application.Session != null)
+                    {
+                        var assemblies = new List<Tuple<string, long>>();
+
+                        if (!Application.Session.Properties.ContainsKey("DebugOS.LoadedAssemblies"))
+                        {
+                            assemblies.Add(Tuple.Create(Application.Session.ImageFilepath, -1L));
+                        }
+                        else
+                        {
+                            foreach (string entry in
+                                Application.Session.Properties["DebugOS.LoadedAssemblies"].Split('?'))
+                            {
+                                long     loadAddr;
+                                string[] details = entry.Split('*');
+
+                                if (details.Length == 2 && Int64.TryParse(details[1], out loadAddr))
+                                {
+                                    assemblies.Add(Tuple.Create(details[0], loadAddr));
+                                }
+                            }
+                        }
+
+                        // Add the required object files
+                        try
+                        {
+                            foreach (Tuple<string, long> assembly in assemblies)
+                            {
+                                ObjectCodeFile obj = Loaders.ObjectFileLoader.Load(assembly.Item1, AssemblySyntax.Intel);
+
+                                if (assembly.Item2 != -1)
+                                {
+                                    obj.ActualLoadAddress = assembly.Item2;
+                                }
+                                newDebugger.IncludeObjectFile(obj);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("[ERROR] Error loading debug image '{0}': {1}",
+                                Application.Session.ImageFilepath, e);
+                        }
+
+                        // Assign debugger and propogate change
+                        Application.Debugger = newDebugger;
+                    }
+                }
+            }
         }
     }
 }

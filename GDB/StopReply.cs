@@ -8,8 +8,8 @@ namespace DebugOS.GDB
     public enum StopReason
     {
         Unknown,
+        Trap,
         Watchpoint,
-        Breakpoint,
         Termination
     }
 
@@ -31,10 +31,25 @@ namespace DebugOS.GDB
             this.Registers = new Tuple<int, long>[0];
             this.Reason    = StopReason.Unknown;
 
-            if (data[0] == 'T')
+            if (data[0] != 'F' && data[0] != 'O')
             {
-                
+                // Remove delimiting spaces if present
+                while (data[1] == ' ') { data = data.Remove(1, 1); }
+
+                // Get the signal no.
+                this.Signal = int.Parse(data.Substring(1, 2));
             }
+
+            if (data[0] == 'S' || data[0] == 'T')
+            {
+                this.Reason = StopReason.Trap;
+                /* TODO: Watchpoints */
+            }
+            else if (data[0] == 'W' || data[0] == 'X')
+            {
+                this.Reason = StopReason.Termination;
+            }
+            else this.Reason = StopReason.Unknown;
         }
     }
 }

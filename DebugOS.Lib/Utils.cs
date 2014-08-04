@@ -28,28 +28,36 @@ namespace DebugOS
             else return (prefix ? "0x" : "") + string.Format("{0:X" + fixedPlaces.ToString() + "}", Address);
         }
 
-        public static byte ParseHex8(string HexString)
+        public static string SanitizeHex(string hexString)
         {
-            if (HexString.StartsWith("0x"))
-                HexString = HexString.Remove(0, 2);
+            // Remove underscores
+            hexString = hexString.Replace("_", "");
+            // Remove spaces
+            hexString = hexString.Replace(" ", "");
 
-            return byte.Parse(HexString, hexNo);
+            // Remove hex prefix
+            if (hexString.StartsWith("0x"))
+            {
+                hexString = hexString.Remove(0, 2);
+            }
+            
+            // Make all uppercase
+            return hexString.ToUpper();
         }
 
-        public static uint ParseHex32(string HexString)
+        public static byte ParseHex8(string hexString)
         {
-            if (HexString.StartsWith("0x"))
-                HexString = HexString.Remove(0, 2);
-
-            return uint.Parse(HexString, hexNo);
+            return byte.Parse(SanitizeHex(hexString), hexNo);
         }
 
-        public static ulong ParseHex64(string HexString)
+        public static uint ParseHex32(string hexString)
         {
-            if (HexString.StartsWith("0x"))
-                HexString = HexString.Remove(0, 2);
+            return uint.Parse(SanitizeHex(hexString), hexNo);
+        }
 
-            return ulong.Parse(HexString, hexNo);
+        public static ulong ParseHex64(string hexString)
+        {
+            return ulong.Parse(SanitizeHex(hexString), hexNo);
         }
 
         public static uint DWordAlign(uint Address, bool AlignUp = true)
@@ -68,23 +76,94 @@ namespace DebugOS
             unchecked { return (uint)IPAddress.HostToNetworkOrder((int)BigEndian); }
         }
 
+        public static uint SwitchByteOrder(uint value)
+        {
+            byte[] data = IntToBytes((int)value);
+            Array.Reverse(data);
+            return (uint)LongFromBytes(data);
+        }
+
+        public static byte[] IntToBytes(int value)
+        {
+            return BitConverter.GetBytes(value);
+        }
+
         public static int IntFromBytes(byte[] data)
         {
-            return System.Runtime.InteropServices.Marshal.ReadInt32(data, 0);
+            if (data.Length < sizeof(int))
+            {
+                byte[] copy = new byte[sizeof(int)];
+
+                if (Application.Session.Architecture.ByteOrder == ByteOrder.LittleEndian)
+                {
+                    Array.Copy(data, copy, data.Length);
+                    data = copy;
+                }
+                else
+                {
+                    Array.Copy(data, 0, copy, sizeof(int) - data.Length, data.Length);
+                    data = copy;
+                }
+            }
+            return BitConverter.ToInt32(data, 0);
         }
 
         public static long LongFromBytes(byte[] data)
         {
-            return System.Runtime.InteropServices.Marshal.ReadInt64(data, 0);
+            if (data.Length < sizeof(long))
+            {
+                byte[] copy = new byte[sizeof(long)];
+
+                if (Application.Session.Architecture.ByteOrder == ByteOrder.LittleEndian)
+                {
+                    Array.Copy(data, copy, data.Length);
+                    data = copy;
+                }
+                else
+                {
+                    Array.Copy(data, 0, copy, sizeof(long) - data.Length, data.Length);
+                    data = copy;
+                }
+            }
+            return BitConverter.ToInt64(data, 0);
         }
 
         public static int Pow(int p1, int p2)
         {
-            if (p2 < 0) return (int)Math.Pow(p1, p2);
+            // If less than zero, use fp version
+            if (p2 < 0)
+            {
+                return (int)Math.Pow(p1, p2);
+            }
+            // Otherwise, just multiply
+            else
+            {
+                // Initial value of 1
+                int output = 1;
+                // Multiply
+                for (int i = 0; i < p2; i++) {  output *= p1; }
+                // Return
+                return output;
+            }
+        }
 
-            int output = 1;
-            for (int i = 0; i < p2; i++) { output *= p1; }
-            return output;
+        public static string GetWindowsPath(string path)
+        {
+            const string cygwinStart = "/cygdrive/";
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                if (path.StartsWith(cygwinStart, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    path = path.Remove(0, cygwinStart.Length);
+                    path = path.Insert(1, ":");
+                }
+                return System.IO.Path.GetFullPath(path);
+            }
         }
     }
 }

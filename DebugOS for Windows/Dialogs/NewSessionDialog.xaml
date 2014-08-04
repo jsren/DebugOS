@@ -1,0 +1,35 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="DebugOS.NewSessionDialog"
+	x:Name="Window"
+	Width="663" Height="353.732" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Title="Begin Debugging">
+
+	<Grid x:Name="LayoutRoot">
+		<Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="54" VerticalAlignment="Top" Width="657"/>
+		<TextBlock HorizontalAlignment="Left" Height="32" Margin="25,19,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="364" FontSize="14.667">
+			<TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource DialogTitle}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Start New Session"/></TextBlock>
+		<Grid Margin="0,71.04,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" Height="158.97">
+			<Grid HorizontalAlignment="Center" Width="486" VerticalAlignment="Top">
+                <ComboBox x:Name="debuggerCombo" HorizontalAlignment="Left" Height="23" Margin="0,20.96,0,0" VerticalAlignment="Top" Width="486"/>
+                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Debugger"/></TextBlock>
+			</Grid>
+			<Grid HorizontalAlignment="Center" Width="486" VerticalAlignment="Top" Margin="0,58.02,0,0">
+				<ComboBox x:Name="archCombo" HorizontalAlignment="Left" Height="23" Margin="0,20.96,0,0" VerticalAlignment="Top" Width="486"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Architecture"/></TextBlock>
+			</Grid>
+			<Grid Margin="0,116.127,0,-1.118" HorizontalAlignment="Center" Width="486" VerticalAlignment="Top">
+				<TextBox x:Name="imgPathText" HorizontalAlignment="Left" Height="22" Margin="0,21.96,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="378"/>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top"><Run Language="en-gb" Text="Binary Path"/></TextBlock>
+				<Button x:Name="browseButton" Content="Browse..." HorizontalAlignment="Left" Height="22" Margin="391,21.96,0,0" VerticalAlignment="Top" Width="89" Click="OnBrowseClick"/>
+			</Grid>
+		</Grid>
+		<Grid Margin="0,0,51,25" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Button Content="Begin" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="100" Click="OnBeginClick" IsDefault="True"/>
+            <Button Content="Load..." HorizontalAlignment="Left" Height="27" Margin="110,0,0,0" VerticalAlignment="Top" Width="100" Click="OnLoadClick"/>
+			<Button Content="Close" HorizontalAlignment="Left" Height="27" Margin="220,0,0,0" VerticalAlignment="Top" Width="100" Click="OnCloseClick" IsCancel="True"/>
+		</Grid>
+	</Grid>
+</Window>

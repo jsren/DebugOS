@@ -22,10 +22,9 @@ namespace DebugOS
                 }
                 else this.UpdateStatus("Connected");
 
-                Application.Debugger.BreakpointHit += Debugger_BreakpointHit;
-                Application.Debugger.Stepped       += Debugger_Stepped;
-                Application.Debugger.Continued     += Debugger_Continued;
-                Application.Debugger.Disconnected  += Debugger_Terminated;
+                Application.Debugger.Suspended    += Debugger_Suspended;
+                Application.Debugger.Continued    += Debugger_Continued;
+                Application.Debugger.Disconnected += Debugger_Terminated;
             };
 
             
@@ -47,10 +46,7 @@ namespace DebugOS
         void Debugger_Continued(object sender, EventArgs e) {
             this.UpdateStatus("Waiting for Breakpoint");
         }
-        void Debugger_Stepped(object sender, SteppedEventArgs e) {
-            this.UpdateStatus("Debugging");
-        }
-        void Debugger_BreakpointHit(object sender, BreakpointHitEventArgs e) {
+        void Debugger_Suspended(object sender, EventArgs e) {
             this.UpdateStatus("Debugging");
         }
         void Debugger_Terminated(object sender, EventArgs e) {

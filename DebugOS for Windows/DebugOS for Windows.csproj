@@ -42,6 +42,7 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationFramework.Aero" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -57,6 +58,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\Memory\AddressContextItem.xaml.cs">
+      <DependentUpon>AddressContextItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Memory\AddressContextHandler.cs" />
+    <Compile Include="Controls\SmartContext.xaml.cs">
+      <DependentUpon>SmartContext.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\Configuration\ConfigCategoryItem.xaml.cs">
+      <DependentUpon>ConfigCategoryItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Code\FileCodeView.xaml.cs">
+      <DependentUpon>FileCodeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FileInfo\SourceFileItem.xaml.cs">
+      <DependentUpon>SourceFileItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FormattedTextBox.cs" />
+    <Compile Include="Controls\Memory\MemoryView.xaml.cs">
+      <DependentUpon>MemoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SessionView.xaml.cs">
+      <DependentUpon>SessionView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Stack\StackDividerItem.xaml.cs">
       <DependentUpon>StackDividerItem.xaml</DependentUpon>
     </Compile>
@@ -73,8 +97,11 @@
     <Compile Include="Controls\ToolbarItem.xaml.cs">
       <DependentUpon>ToolbarItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\DebuggerSelector.xaml.cs">
-      <DependentUpon>DebuggerSelector.xaml</DependentUpon>
+    <Compile Include="Dialogs\Configuration\ConfigurationDialog.xaml.cs">
+      <DependentUpon>ConfigurationDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\NewSessionDialog.xaml.cs">
+      <DependentUpon>NewSessionDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AssemblyExplorer\AssemblyExplorer.xaml.cs">
       <DependentUpon>AssemblyExplorer.xaml</DependentUpon>
@@ -83,7 +110,7 @@
     <Compile Include="Extensions\AssemblyExplorer\LoadedAssemblyItem.xaml.cs">
       <DependentUpon>LoadedAssemblyItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\BochsConfiguration.xaml.cs">
+    <Compile Include="Extensions\Bochs\BochsConfiguration.xaml.cs">
       <DependentUpon>BochsConfiguration.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\MainUI\MenuBar.xaml.cs">
@@ -92,7 +119,13 @@
     <Compile Include="Controls\Register\RegisterViewer.xaml.cs">
       <DependentUpon>RegisterViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\BochsRegLoader.cs" />
+    <Compile Include="Extensions\Bochs\BochsRegLoader.cs" />
+    <Compile Include="Extensions\GDB\GDBConfiguration.xaml.cs">
+      <DependentUpon>GDBConfiguration.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\GDB\GDBExtension.cs" />
+    <Compile Include="Extensions\QemuExtension.cs" />
+    <Compile Include="Extensions\SessionView\SessionViewExtension.cs" />
     <Compile Include="SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>
@@ -106,8 +139,25 @@
     <Compile Include="UICode\DragBehaviour.cs" />
     <Compile Include="UICode\MainPanel.cs" />
     <Compile Include="UICode\MenuItem.cs" />
+    <Compile Include="UICode\SmartContextBehaviour.cs" />
     <Compile Include="UICode\WindowHost.cs" />
-    <Page Include="Controls\Code\CodeView.xaml">
+    <Page Include="Controls\Memory\AddressContextItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\SmartContext.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogs\Configuration\ConfigCategoryItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\Code\FileCodeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\Code\UnitCodeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -116,6 +166,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\Code\CodeLineItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\FileInfo\SourceFileItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -131,6 +185,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Controls\Memory\MemoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\Register\RegisterItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,8 +197,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controls\Code\CodeView.xaml.cs">
-      <DependentUpon>CodeView.xaml</DependentUpon>
+    <Compile Include="Controls\Code\UnitCodeView.xaml.cs">
+      <DependentUpon>UnitCodeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Code\AssemblyLineItem.xaml.cs">
       <DependentUpon>AssemblyLineItem.xaml</DependentUpon>
@@ -160,6 +218,10 @@
     <Compile Include="Controls\Register\RegisterItem.xaml.cs">
       <DependentUpon>RegisterItem.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\SessionView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\Stack\StackDividerItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -172,7 +234,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialogs\DebuggerSelector.xaml">
+    <Page Include="Dialogs\Configuration\ConfigurationDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogs\NewSessionDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -184,7 +250,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Extensions\BochsConfiguration.xaml">
+    <Page Include="Extensions\Bochs\BochsConfiguration.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Extensions\GDB\GDBConfiguration.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -298,12 +368,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controls\FileInfo\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="objdump.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\document.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\gdb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\refresh.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

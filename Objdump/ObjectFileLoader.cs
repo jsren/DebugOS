@@ -40,6 +40,16 @@ namespace DebugOS.Loaders
                 argAdd += " -M intel";
             }
 
+            // Look for a given objdump binary path
+            string exePath = Application.Arguments["-objdump"];
+
+            if (exePath == null && Application.Session != null)
+            {
+                exePath = Application.Session.Properties["Objdump.Path"];
+            }
+            // finally just invoke directly
+            exePath = Path.GetFullPath(exePath ?? "objdump.exe");
+
             // Try to invoke objdump
             var proc = Process.Start(new ProcessStartInfo()
             {
@@ -47,8 +57,9 @@ namespace DebugOS.Loaders
                 RedirectStandardOutput = true,
                 RedirectStandardError  = true,
                 UseShellExecute        = false,
-                FileName               = @"objdump.exe",
-                Arguments = "-x -S -C" + argAdd + " \"" + filepath + '"'
+                FileName               = exePath,
+                WorkingDirectory       = Path.GetDirectoryName(exePath),
+                Arguments = "-x -l -S -C" + argAdd + " \"" + filepath + '"'
             });
 
             // Load from objdump output
@@ -108,6 +119,23 @@ namespace DebugOS.Loaders
             Section[]   secs  = SectionsLoader.Load(stream);
             SymbolTable table = SymbolTableLoader.LoadFromObjdump(stream);
             CodeUnit[]  code  = CodeUnitLoader.Load(stream, asmSyntax);
+
+            var unfound = new System.Collections.Generic.List<string>();
+
+            foreach (CodeUnit unit in code)
+            {
+                bool present = false;
+                foreach (SymbolEntry entry in table)
+                {
+                    if (unit.Name == entry.Name)
+                    {
+                        present = true;
+                        break;
+                    }
+                }
+                if (!present) unfound.Add(unit.Name);
+            }
+
 
             return new ObjectCodeFile(startAddress, filename, architecture, secs, table, code);
         }

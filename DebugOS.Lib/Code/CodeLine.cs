@@ -12,6 +12,8 @@ namespace DebugOS
         public int Size { get; private set; }
         /// <summary>The offset of the line within the object file.</summary>
         public long Offset { get; private set; }
+        /// <summary>Gets the number of the corresponding source line.</summary>
+        public long LineNumber { get; private set; }
         /// <summary>The text code of the line.</summary>
         public String Text { get; private set; }
         /// <summary>The assembly instructions for the line.</summary>
@@ -22,14 +24,16 @@ namespace DebugOS
         /// </summary>
         /// <param name="Size">The size in bytes of the line.</param>
         /// <param name="Offset">The offset of the line within the object file.</param>
+        /// <param name="LineNo">The number of the corresponding source line.</param>
         /// <param name="Text">The text code of the line.</param>
         /// <param name="Assembly">The assembly instructions for the line.</param>
-        public CodeLine(int Size, long Offset, String Text, AssemblyLine[] Assembly)
+        public CodeLine(int Size, long Offset, long LineNo, String Text, AssemblyLine[] Assembly)
         {
-            this.Size     = Size;
-            this.Offset   = Offset;
-            this.Text     = Text;
-            this.Assembly = Assembly;
+            this.Size       = Size;
+            this.Offset     = Offset;
+            this.Text       = Text;
+            this.Assembly   = Assembly;
+            this.LineNumber = LineNo;
         }
 
         /// <summary>

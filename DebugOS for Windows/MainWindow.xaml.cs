@@ -1,6 +1,6 @@
 ﻿/* MainWindow.xaml.cs - (c) James S Renwick 2014
  * ---------------------------------------------
- * Version 1.5.1
+ * Version 1.5.4
  * 
  */
 using System;
@@ -9,7 +9,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-
 using WinState = System.Windows.WindowState;
 
 namespace DebugOS
@@ -18,6 +17,8 @@ namespace DebugOS
 	{
         private DragBehaviour drag;
         private string currentTheme;
+
+        private SmartContextBehaviour contextPopup;
 
         /// <summary>
         /// Window is hidden until loading complete.
@@ -35,13 +36,28 @@ namespace DebugOS
             // Allow the titlebar to drag the window
             this.drag = new DragBehaviour(this.titlebar, this);
 
+            // Add the smart context popup control
+            this.contextPopup = new SmartContextBehaviour(this);
+            this.contextPopup.Handlers.Add(new AddressContextHandler());
+
             // Add initial top-level menu items
             menubar.AddItem("", new MenuItem() { Header = "_Debug" });
             menubar.AddItem("", new MenuItem() { Header = "_Settings" });
             menubar.AddItem("", new MenuItem() { Header = "_Help" });
+			// Add intitial second-level menu items
+            var configItem = new MenuItem() { Header = "Configure DebugOS..."};
+            configItem.Clicked += (_) => new ConfigurationDialog().ShowDialog();
+
+			menubar.AddItem("Settings", configItem);
 
             // Set the current theme - the built-in will be the first
             this.currentTheme = App.LoadedThemes.FirstOrDefault();
+
+            // Handle a null session - prompt for new
+            Application.SessionChanged += () =>
+            {
+                if (Application.Session == null) this.OnNewSession();
+            };
         }
 
         // When the main window has been loaded
@@ -69,52 +85,71 @@ namespace DebugOS
             if (Application.Debugger == null)
             {
                 // First try to load from cmd-line args
-                string target = null, debugger = null;
-                string[] args = Environment.GetCommandLineArgs();
+                string target   = Application.Arguments["-t"] ?? Application.Arguments["-target"];
+                string debugger = Application.Arguments["-d"] ?? Application.Arguments["-debugger"];
+                string session  = Application.Arguments["-s"] ?? Application.Arguments["-session"];
 
-                for (int i = 1; i < args.Length; i++)
+                // Load from a previous session
+                if (session != null)
                 {
-                    string arg = args[i].ToLower().Trim();
-
-                    if ((arg == "-t" || arg == "-target") && (i + 1 != args.Length))
+                    try 
                     {
-                        target = args[i + 1];
+                        Application.Session = DebugSession.Load(session);
+
+                        target   = Application.Session.ImageFilepath;
+                        debugger = Application.Session.Debugger;
                     }
-                    else if ((arg == "-d" || arg == "-debugger") && (i + 1 != args.Length))
-                    {
-                        debugger = args[i + 1];
-                    }
-
-                    if (target != null && debugger != null) break;
-                }
-
-                if (target == null || debugger == null)
-                {
-                    var dialog = new DebuggerSelector();
-                    if (target   != null ) dialog.ImagePath    = target;
-                    if (debugger != null)  dialog.DebuggerName = debugger;
-
-                    if (dialog.ShowDialog().Value) // This always has value
-                    {
-                        target   = dialog.ImagePath;
-                        debugger = dialog.DebuggerName;
+                    catch (Exception x) {
+                        MessageBox.Show("Error loading previous session: " + x.ToString());
                     }
                 }
-                if (target != null && debugger != null)
+                // Otherwise, create new
+                else this.OnNewSession(target, debugger);
+            }
+        }
+
+        void OnNewSession(string target = null, string debugger = null, string architecture = null)
+        {
+            // Clear the UI
+            var ids = panels.Keys.ToArray();
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                this.RemoveMainPanel(ids[i]);
+            }
+
+            // If not present, prompt the user via the GUI
+            if (target == null || debugger == null || architecture == null)
+            {
+                var dialog = new NewSessionDialog();
+
+                if (target       != null ) dialog.ImagePath    = target;
+                if (debugger     != null)  dialog.DebuggerName = debugger;
+                if (architecture != null)  dialog.Architecture = architecture;
+
+                if (dialog.ShowDialog().Value) // This always has value
                 {
-                    Application.Session = new DebugSession(debugger,
-                            App.LoadedExtensions.Select((ex) => ex.Name).ToArray(), target, null);
-                    try
-                    {
-                        App.LoadDebugger(debugger);
-                    }
-                    catch (Exception x)
-                    {
-                        var msg = String.Format("An error occurred while loading debugger '{0}':\n{1}", 
-                            debugger, x);
-                        MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    target       = dialog.ImagePath;
+                    debugger     = dialog.DebuggerName;
+                    architecture = dialog.Architecture;
                 }
+            }
+
+            // Note that target can be empty
+            if (target != null && debugger != null && architecture != null)
+            {
+                var list = App.LoadedArchitectures.Where((arch) => arch.ID == architecture);
+
+                if (list.Count() == 0) throw new Exception("Unknown architecture: " + architecture);
+
+                // Create a new session
+                Application.Session = new DebugSession
+                (
+                    debugger,
+                    App.LoadedExtensions.Select((ex) => ex.Name).ToArray(), 
+                    target,
+                    list.First()
+                );
             }
         }
 		
@@ -184,20 +219,38 @@ namespace DebugOS
 
         public void RemoveMainPanel(int panelID)
         {
+            // Update the panel
             MainPanel panel = panels[panelID];
+            panel.IsOpen    = false;
+
+            // Remove the corresponding tab
             if (panel.Location.Side == PanelSide.Left)
             {
                 this.leftTabControl.RemoveTab(panel.GetTabItem());
             }
+            else if (panel.Location.Side == PanelSide.Right)
+            {
+                this.rightTabControl.RemoveTab(panel.GetTabItem());
+            }
             else throw new NotImplementedException();
+
+            // De-register the ID
+            this.panels.Remove(panelID);
         }
         internal void RemoveMainPanel(MainPanel panel)
         {
-            if (panel.Location.Side == PanelSide.Left)
+            // Get the panel's ID
+            var pairs = this.panels.Where((pair) => pair.Value == panel);
+
+            if (pairs.Count() == 0)
             {
-                this.leftTabControl.RemoveTab(panel.GetTabItem());
+                return;
             }
-            else throw new NotImplementedException();
+            else if (pairs.Count() != 1)
+            {
+                throw new Exception("A MainPanel has been registered more than once with different IDs");
+            }
+            else this.RemoveMainPanel(pairs.First().Key);
         }
 
         public void AddMenuItem(string path, IMenuItem item)
@@ -222,9 +275,18 @@ namespace DebugOS
 
             MainPanel mainPanel = (MainPanel)panel;
 
+            mainPanel.Closed += (sender) =>
+            {
+                this.RemoveMainPanel((MainPanel)sender);
+            };
+
             if (preferredLocation.Side == PanelSide.Left)
             {
                 this.leftTabControl.AddTab(mainPanel.GetTabItem());
+            }
+            else if (preferredLocation.Side == PanelSide.Right)
+            {
+                this.rightTabControl.AddTab(mainPanel.GetTabItem());
             }
             else throw new NotImplementedException();
 
@@ -237,10 +299,19 @@ namespace DebugOS
 
         public void FocusMainPanel(int panelID)
         {
-            MainPanel panel = panels[panelID];
-            leftTabControl.SelectTab(panel.GetTabItem());
-        }
+            MainPanel     panel    = panels[panelID];
+            PanelLocation location = panel.Location;
 
+            if (location.Side == PanelSide.Left)
+            {
+                leftTabControl.SelectTab(panel.GetTabItem());
+            }
+            else if (location.Side == PanelSide.Right)
+            {
+                rightTabControl.SelectTab(panel.GetTabItem());
+            }
+            else throw new NotImplementedException();
+        }
         
         public IToolbarPanel NewToolbarPanel() {
             return new ToolbarPanel();

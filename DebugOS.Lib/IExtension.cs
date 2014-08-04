@@ -15,5 +15,6 @@ namespace DebugOS
     public interface IDebuggerExtension : IExtension
     {
         IDebugger LoadDebugger();
+        string DebuggerName { get; }
     }
 }

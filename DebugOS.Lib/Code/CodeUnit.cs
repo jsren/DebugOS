@@ -8,27 +8,36 @@ namespace DebugOS
     /// </summary>
     public class CodeUnit
     {
-        /// <summary>The size in bytes of the code source.</summary>
+        /// <summary>The size in bytes of the code unit.</summary>
         public virtual long Size { get; private set; }
-        /// <summary>The offset within the object file at which the source is present.</summary>
+        /// <summary>The offset within the object file at which the unit is present.</summary>
         public virtual long Offset { get; private set; }
-        /// <summary>The name of the source.</summary>
+        /// <summary>The name of the unit.</summary>
         public virtual String Name { get; private set; }
-        /// <summary>The source's code.</summary>
+        /// <summary>The symbol by which the unit is referred.</summary>
+        public virtual String Symbol { get; private set; }
+        /// <summary>The path to the source file which defines this unit.</summary>
+        public virtual String SourceFilepath { get; private set; }
+        /// <summary>The units's code.</summary>
         public virtual CodeLine[] Lines { get; private set; }
 
         /// <summary>
         /// Creates a code unit object.
         /// </summary>
-        /// <param name="Offset">The size in bytes of the code source.</param>
-        /// <param name="Name">The offset within the object file at which the source is present.</param>
-        /// <param name="Lines">The source's code.</param>
-        public CodeUnit(long Offset, String Name, CodeLine[] Lines)
+        /// <param name="Offset">The size in bytes of the code unit.</param>
+        /// <param name="Name">The offset within the object file at which the unit is present.</param>
+        /// <param name="Symbol">The symbol by which the unit is referred.</param>
+        /// <param name="Path">The path to the source file which defines this unit.</param>
+        /// <param name="Lines">The unit's code.</param>
+        public CodeUnit(long Offset, String Name, String Symbol, String Path, CodeLine[] Lines)
         {
             this.Offset = Offset;
             this.Name   = Name;
+            this.Symbol = Symbol;
             this.Lines  = Lines;
             this.Size   = this.Lines.Sum(line => (long)line.Size);
+
+            this.SourceFilepath = Path;
         }
         protected CodeUnit() { }
 

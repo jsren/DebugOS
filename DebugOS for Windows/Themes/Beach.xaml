@@ -15,5 +15,6 @@
     <Color x:Key="StackReturnItem">#FFB9C2E5</Color>
     <Color x:Key="TabLabel">#FF272727</Color>
     <Color x:Key="TabBackground">#FFF3F3F3</Color>
+    <Color x:Key="DialogTitle">#FF303030</Color>
     <!-- Resource dictionary entries should be defined here. -->
 </ResourceDictionary>
