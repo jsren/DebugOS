@@ -1,6 +1,6 @@
 ﻿/* IDebugger.cs - (c) James S Renwick 2013-2014 
  * --------------------------------------------
- * Version 1.5.0
+ * Version 1.6.0
  */
 using System;
 using System.Collections.Generic;
@@ -13,10 +13,10 @@ namespace DebugOS
     public interface IDebugger
     {
         /// <summary>
-        /// Gets an IEnumerable containing the breakpoints currently set on the 
+        /// Gets an BreakpointCollection containing the breakpoints currently set on the 
         /// debugger.
         /// </summary>
-        IEnumerable<Breakpoint> Breakpoints { get; }
+        BreakpointCollection Breakpoints { get; }
         /// <summary>
         /// Gets whether the debugger can read blocks of the debuggee's RAM.
         /// </summary>
@@ -86,13 +86,20 @@ namespace DebugOS
         /// Occurrs when one or more debuggee register values have been changed.
         /// </summary>
         event EventHandler<RegistersChangedEventArgs> RefreshRegisters;
-
+        /// <summary>
+        /// Occurrs when a new breakpoint has been set on the debugger.
+        /// </summary>
+        event EventHandler<BreakpointChangedEventArgs> BreakpointSet;
+        /// <summary>
+        /// Occurrs when an existing breakpoint has been cleared on the debugger.
+        /// </summary>
+        event EventHandler<BreakpointChangedEventArgs> BreakpointCleared;
 
         /// <summary>
         /// Clears the given breakpoint if set.
         /// </summary>
-        /// <param name="breakpoint">The breakpoint to clear.</param>
-        void ClearBreakpoint(Breakpoint breakpoint);
+        /// <param name="address">The address of the breakpoint to clear.</param>
+        void ClearBreakpoint(Address address);
         /// <summary>
         /// Continues execution until a breakpoint or other trap is hit
         /// or the debugging is terminated.
@@ -140,8 +147,9 @@ namespace DebugOS
         /// <summary>
         /// Sets the given breakpoint on the debugger.
         /// </summary>
-        /// <param name="breakpoint">The breakpoint to set.</param>
-        void SetBreakpoint(Breakpoint breakpoint);
+        /// <param name="address">The address at which to set the breakpoint.</param>
+        /// <returns>An object for interacting with the breakpoint.</returns>
+        Breakpoint SetBreakpoint(Address address);
         /// <summary>
         /// Performs a single forwards step, executing an instrution and 
         /// returning to the debugger.

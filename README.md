@@ -1,8 +1,8 @@
 DebugOS
 =======
 
-An extensible graphical debugger with Bochs integration for operating system debugging. 
-GUI for Windows only.
+An extensible graphical debugger written in C# boasting built-in integration with 
+popular virtual machines/emulators such as Bochs and Qemu.
 
 All object code and markup (c) James S Renwick 2013-2014 unless otherwise stated.
 Icons are copyright their respective owners and are free for non-commercial use.

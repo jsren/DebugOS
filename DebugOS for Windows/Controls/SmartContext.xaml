@@ -16,8 +16,6 @@
 
 	<ScrollViewer Padding="10" VerticalScrollBarVisibility="Auto">
 
-		<StackPanel x:Name="LayoutRoot" VerticalAlignment="Top">
-			<local:AddressContextItem VerticalAlignment="Top"/>
-		</StackPanel>
+		<StackPanel x:Name="LayoutRoot" VerticalAlignment="Top" Width="171"/>
 	</ScrollViewer>
 </UserControl>

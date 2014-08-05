@@ -87,6 +87,10 @@ namespace DebugOS
         /// <param name="e">The application's command-line arguments.</param>
         protected override void OnStartup(StartupEventArgs startup)
         {
+            // Subscribe to unhandled exception events
+            AppDomain.CurrentDomain.UnhandledException += OnAppUnhandledException;
+            App.Current.DispatcherUnhandledException   += OnAppUnhandledException;
+
             // Show dynamic splash screen
             App.SplashScreen = SplashWindow.ShowSplash(showImage:true);
 
@@ -203,7 +207,6 @@ namespace DebugOS
             base.OnStartup(startup); 
         }
 
-
         /// <summary>
         /// Handle session change - load debugger
         /// </summary>
@@ -305,6 +308,23 @@ namespace DebugOS
                         Application.Debugger = newDebugger;
                     }
                 }
+            }
+        }
+
+
+        private void OnAppUnhandledException(object sender, System.Windows.Threading.
+            DispatcherUnhandledExceptionEventArgs e)
+        {
+            this.OnAppUnhandledException(sender, 
+                new UnhandledExceptionEventArgs(e.Exception, true));
+        }
+        private void OnAppUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            // Attempt to forcibly disconnect on termination
+            if (e.IsTerminating)
+            {
+                try { Application.Debugger.Disconnect(); }
+                catch { }
             }
         }
     }

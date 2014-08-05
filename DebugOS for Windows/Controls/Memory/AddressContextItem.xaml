@@ -6,7 +6,7 @@
 	mc:Ignorable="d"
 	x:Class="DebugOS.AddressContextItem"
 	x:Name="UserControl"
-	d:DesignWidth="171" MinWidth="171" HorizontalAlignment="Left" VerticalAlignment="Top">
+	d:DesignWidth="171" MinWidth="171" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe UI" FontSize="12">
 
 	<Grid x:Name="LayoutRoot">
 		<Grid>

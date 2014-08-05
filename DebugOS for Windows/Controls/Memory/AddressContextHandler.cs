@@ -12,28 +12,49 @@ namespace DebugOS
         {
             if (content == null) yield break;
 
+            var addresses = new List<Address>();
+
             // Use a regular expression to search for a hex string within the content
             MatchCollection matches = hexRegex.Matches(content);
 
             foreach (Match match in matches)
             {
-                yield return new AddressContextItem(
-                    new Address((long)Utils.ParseHex64(match.Groups[1].Value)));
+                var address = new Address((long)Utils.ParseHex64(match.Groups[1].Value));
+                addresses.Add(address);
+
+                yield return new AddressContextItem(address);
             }
 
             // If no matches, brute-force
-            if (matches.Count == 0) 
+            if (matches.Count == 0)
             {
-                UIElement output = null;
+                AddressContextItem output = null;
                 try
                 {
-                    output = new AddressContextItem(
-                        new Address((long)Utils.ParseHex64(content)));
+                    var address = new Address((long)Utils.ParseHex64(content));
+                    addresses.Add(address);
+
+                    output = new AddressContextItem(address);
                 }
                 catch { }
 
                 if (output != null) yield return output;
-                else                yield break;
+            }
+
+            // Look for matching symbols
+            if (addresses.Count != 0 && Application.Debugger != null &&
+                Application.Debugger.CurrentObjectFile != null)
+            {
+                foreach (var sym in Application.Debugger.CurrentObjectFile.SymbolTable)
+                {
+                    foreach (Address address in addresses)
+                    {
+                        if (sym.Value == address.Value && sym.Value != 0)
+                        {
+                            yield return new SymbolContextItem(sym);
+                        }
+                    }
+                }
             }
         }
     }

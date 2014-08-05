@@ -78,7 +78,10 @@ namespace DebugOS.Extensions
 
             foreach (Breakpoint bp in Application.Debugger.Breakpoints)
             {
-                bp.IsActive = false;
+                if (bp.IsActive) // Ignore deactivated breakpoints
+                {
+                    Application.Debugger.ClearBreakpoint(bp.Address);
+                }
             }
         }
 

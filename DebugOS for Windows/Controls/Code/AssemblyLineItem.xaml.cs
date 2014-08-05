@@ -10,10 +10,9 @@ namespace DebugOS
 	public partial class AssemblyLineItem : UserControl
 	{
 		AssemblyLine line;
-        Breakpoint breakpoint;
 
-        
         public bool IsCurrentItem { get; private set; }
+        public Breakpoint Breakpoint { get; private set; }
 		
 
 		public AssemblyLineItem()
@@ -24,6 +23,7 @@ namespace DebugOS
 		{
 			this.InitializeComponent();
 
+            this.line        = asmLine;
             this.opcode.Text = asmLine.Instruction;
             this.meta.Text   = asmLine.Metadata;
 
@@ -31,8 +31,34 @@ namespace DebugOS
                 this.operands.Text = asmLine.Parameters.Aggregate((x, y) => x + ", " + y);
             }
 
-			this.line = asmLine;
+            var bp = Application.Debugger.Breakpoints.GetBreakpoint(this.line.Offset);
+
+            // Set breakpoint
+            this.OnDebuggerBPSet(null, new BreakpointChangedEventArgs(bp));
+
+            // Watch for breakpoint changed events
+            Application.Debugger.BreakpointSet     += OnDebuggerBPSet;
+            Application.Debugger.BreakpointCleared += OnDebuggerBPCleared;
 		}
+
+        private void OnDebuggerBPCleared(object sender, BreakpointChangedEventArgs e)
+        {
+            if (e.Breakpoint != null && e.Breakpoint.Address == this.line.Offset)
+            {
+                this.Breakpoint = null;
+                this.Dispatcher.BeginInvoke((Action)this.UpdateBPDisplay);
+            }
+        }
+
+        private void OnDebuggerBPSet(object sender, BreakpointChangedEventArgs e)
+        {
+            if (e.Breakpoint != null && e.Breakpoint.IsActive && 
+                e.Breakpoint.Address == this.line.Offset)
+            {
+                this.Breakpoint = e.Breakpoint;
+                this.Dispatcher.BeginInvoke((Action)this.UpdateBPDisplay);
+            }
+        }
 		
 		public void UpdateStep(uint currentAddress)
         {
@@ -50,62 +76,34 @@ namespace DebugOS
 
         private void OnBreakpointClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            // Enable/Disable breakpoint when clicked
             if (this.Breakpoint == null)
             {
-                this.Breakpoint = new Breakpoint(true, this.line.Offset);
+                Application.Debugger.SetBreakpoint(this.line.Offset);
             }
             else
             {
-                this.Breakpoint = null;
+                Application.Debugger.ClearBreakpoint(this.line.Offset);
             }
+            this.UpdateBPDisplay();
         }
 
-        public Breakpoint Breakpoint
+        /// <summary>
+        /// Updates whether the breakpoint icon is displayed.
+        /// </summary>
+        internal void UpdateBPDisplay()
         {
-            get { return this.breakpoint; }
-
-            set
+            if (this.Breakpoint != null)
             {
-                // The breakpoint has been cleared
-                if (value == null && this.breakpoint != null)
-                {
-                    try {
-                        Application.Debugger.ClearBreakpoint(this.breakpoint);
-                    }
-                    finally
-                    {
-                        this.breakpoint = null;
-                        this.breakpointFill.Visibility = System.Windows.Visibility.Collapsed;
-                    }
-                }
-                // A new breakpoint has been set
-                else
-                {
-                    if (this.line.MachineCode.Length != 0)
-                    {
-                        try
-                        {
-                            Application.Debugger.SetBreakpoint(this.breakpoint = value);
-                            this.breakpointFill.Visibility = System.Windows.Visibility.Visible;
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("[ERROR] Error setting breakpoint at '{0}': {1}",
-                                Utils.GetHexString((ulong)this.line.Offset, prefix: true), e);
-
-                            this.breakpoint = null;
-                            this.breakpointFill.Visibility = System.Windows.Visibility.Collapsed;
-                        }
-                    }
-                }
+                this.breakpointFill.Visibility = System.Windows.Visibility.Visible;
             }
+            else this.breakpointFill.Visibility = System.Windows.Visibility.Collapsed;
         }
 
         private void OnBPHitTestEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             this.breakpointOutline.Visibility = System.Windows.Visibility.Visible;
         }
-
         private void OnBPHitTestLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             this.breakpointOutline.Visibility = System.Windows.Visibility.Collapsed;

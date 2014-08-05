@@ -1,8 +1,11 @@
-﻿using System;
+﻿/* GDBDebugger.cs - (c) James S Renwick 2014
+ * -----------------------------------------
+ * Version 1.2.0
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 
 namespace DebugOS.GDB
 {
@@ -32,7 +35,9 @@ namespace DebugOS.GDB
         public event EventHandler Disconnected;
         public event EventHandler ArchitectureChanged;
 
-        public event EventHandler<RegistersChangedEventArgs> RefreshRegisters;
+        public event EventHandler<BreakpointChangedEventArgs> BreakpointSet;
+        public event EventHandler<BreakpointChangedEventArgs> BreakpointCleared;
+        public event EventHandler<RegistersChangedEventArgs>  RefreshRegisters;
 
         public GDBDebugger()
         {
@@ -128,25 +133,10 @@ namespace DebugOS.GDB
             // Fire stepped event
             if (this.Suspended != null) this.Suspended(this, null);
 
-            // Reset any disabled breakpoints
-            this.EnableBreakpoints();
-
             // Qemu gets stuck on the current line unless the breakpoint is disabled
             if (this.CurrentBreakpoint != null)
             {
-                connector.ClearBreakpoint(this.CurrentBreakpoint.Address.Value);
-                this.CurrentBreakpoint.IsActive = false;
-            }
-        }
-
-        private void EnableBreakpoints()
-        {
-            foreach (Breakpoint bp in this.breakpoints)
-            {
-                if (!bp.IsActive)
-                {
-                    connector.SetBreakpoint(bp.Address.Value);
-                }
+                this.ClearBreakpoint(this.CurrentBreakpoint.Address);
             }
         }
 
@@ -162,6 +152,8 @@ namespace DebugOS.GDB
             connector.Continue();
 
             this.CurrentStatus = DebugStatus.Executing;
+
+            if (this.Continued != null) this.Continued(this, null);
         }
 
         public void Disconnect()
@@ -169,29 +161,50 @@ namespace DebugOS.GDB
             connector.Disconnect();
 
             this.CurrentStatus = DebugStatus.Disconnected;
+
+            if (this.Disconnected != null) this.Disconnected(this, null);
         }
 
-        public void SetBreakpoint(Breakpoint breakpoint)
+        public Breakpoint SetBreakpoint(Address address)
         {
-            if (breakpoint.Address.Type == AddressType.Logical) {
-                throw new InvalidOperationException();
+            if (address.Type == AddressType.Logical) {
+                throw new InvalidOperationException("Logical addressing not supported");
             }
-            connector.SetBreakpoint(breakpoint.Address.Value);
-            this.breakpoints.Add(breakpoint);
-        }
+            connector.SetBreakpoint(address.Value);
 
-        public void ClearBreakpoint(Breakpoint breakpoint)
-        {
-            if (breakpoint.Address.Type == AddressType.Logical) {
-                throw new InvalidOperationException();
+            var bp = new Breakpoint(address);
+            this.breakpoints.Add(bp);
+
+            // Fire event
+            if (this.BreakpointSet != null) {
+                this.BreakpointSet(this, new BreakpointChangedEventArgs(bp));
             }
-            connector.ClearBreakpoint(breakpoint.Address.Value);
-            this.breakpoints.Remove(breakpoint);
+            return bp;
         }
 
-        public IEnumerable<Breakpoint> Breakpoints
+        public void ClearBreakpoint(Address address)
         {
-            get { return this.breakpoints.ToArray(); }
+            if (address.Type == AddressType.Logical) {
+                throw new InvalidOperationException("Logical addressing not supported");
+            }
+            connector.ClearBreakpoint(address.Value);
+
+            Breakpoint bp = this.Breakpoints.GetBreakpoint(address);
+            if (bp == null) return;
+
+            this.breakpoints.Remove(bp);
+
+            bp.MarkDeactivated();
+
+            // Fire event
+            if (this.BreakpointCleared != null) {
+                this.BreakpointCleared(this, new BreakpointChangedEventArgs(bp));
+            }
+        }
+
+        public BreakpointCollection Breakpoints
+        {
+            get { return new BreakpointCollection(this.breakpoints); }
         }
 
         public ObjectCodeFile[] IncludedObjectFiles
@@ -242,11 +255,8 @@ namespace DebugOS.GDB
             {
                 var sym = file.SymbolTable.GetSymbol("_start");
 
-                if (sym != null) {
-                    this.SetBreakpoint(new Breakpoint(true, sym.Value));
-                }
+                if (sym != null) this.SetBreakpoint(sym.Value);
             }
-
         }
 
         public void ExcludeObjectFile(ObjectCodeFile file)

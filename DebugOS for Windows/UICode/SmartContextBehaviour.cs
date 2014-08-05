@@ -106,6 +106,9 @@ namespace DebugOS
                 this.popup.IsOpen          = true;
                 this.IsContextPopupOpen    = true;
 
+                // Move to the mouse cursor
+                this.popup.HorizontalOffset = Mouse.GetPosition(target).X;
+
                 target.MouseLeave += this.OnTargetMouseLeave;
                 this.timer.Stop();
             });

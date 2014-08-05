@@ -136,32 +136,32 @@ namespace DebugOS.Bochs
             this.writeLine("sregs");
         }
 
-        public void SetBreakpoint(Breakpoint bp)
+        public void SetBreakpoint(Address address)
         {
             // Get the address string
-            string address = this.GetAddressString(bp.Address);
+            string addressStr = this.GetAddressString(address);
 
-            if (bp.Address.Type == AddressType.Physical)
+            if (address.Type == AddressType.Physical)
             {
-                this.writeLine("pb " + address);
+                this.writeLine("pb " + addressStr);
             }
-            else if (bp.Address.Type == AddressType.Logical)
+            else if (address.Type == AddressType.Logical)
             {
-                this.writeLine("lb " + address);
+                this.writeLine("lb " + addressStr);
             }
-            else this.writeLine("vb " + address);
+            else this.writeLine("vb " + addressStr);
         }
 
         public void EnableBreakpoint(int index) {
-            this.writeLine("bpe " + index.ToString());
+            this.writeLine("bpe " + (index+1).ToString());
         }
 
         public void DisableBreakpoint(int index) {
-            this.writeLine("bpd " + index.ToString());
+            this.writeLine("bpd " + (index + 1).ToString());
         }
 
         public void ClearBreakpoint(int index) {
-            this.writeLine("del " + index.ToString());
+            this.writeLine("del " + (index+1).ToString());
         }
 
         public void ToggleBreakOnModeChange() {

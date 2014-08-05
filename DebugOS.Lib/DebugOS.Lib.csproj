@@ -52,7 +52,9 @@
     <Compile Include="Code\SymbolEntry.cs" />
     <Compile Include="Code\SymbolFlags.cs" />
     <Compile Include="Code\SymbolTable.cs" />
+    <Compile Include="Debugger\EventArgs\BreakpointSetEventArgs.cs" />
     <Compile Include="Debugger\EventArgs\MemoryReadEventArgs.cs" />
+    <Compile Include="Debugger\Objects\BreakpointCollection.cs" />
     <Compile Include="Debugger\Objects\DebugStatus.cs" />
     <Compile Include="Debugger\Objects\Address.cs" />
     <Compile Include="Debugger\Objects\AddressType.cs" />

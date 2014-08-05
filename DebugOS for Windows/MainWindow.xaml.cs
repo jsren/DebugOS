@@ -39,6 +39,7 @@ namespace DebugOS
             // Add the smart context popup control
             this.contextPopup = new SmartContextBehaviour(this);
             this.contextPopup.Handlers.Add(new AddressContextHandler());
+            this.contextPopup.Handlers.Add(new SymbolContextHandler());
 
             // Add initial top-level menu items
             menubar.AddItem("", new MenuItem() { Header = "_Debug" });

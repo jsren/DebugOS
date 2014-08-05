@@ -58,6 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\FileInfo\SymbolContextHandler.cs" />
     <Compile Include="Controls\Memory\AddressContextItem.xaml.cs">
       <DependentUpon>AddressContextItem.xaml</DependentUpon>
     </Compile>
@@ -134,6 +135,9 @@
     </Compile>
     <Compile Include="Controls\Tab\TabControl.xaml.cs">
       <DependentUpon>TabControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FileInfo\SymbolContextItem.xaml.cs">
+      <DependentUpon>SymbolContextItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="UICode\CodeViewer.cs" />
     <Compile Include="UICode\DragBehaviour.cs" />
@@ -284,6 +288,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\Tab\TabControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\FileInfo\SymbolContextItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

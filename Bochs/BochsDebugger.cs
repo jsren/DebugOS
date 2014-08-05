@@ -1,6 +1,6 @@
 ﻿/* BochsDebugger.cs - (c) James S Renwick 2014
  * -------------------------------------------
- * Version 1.3.2
+ * Version 1.4.0
  */
 using System;
 using System.Collections.Generic;
@@ -31,17 +31,18 @@ namespace DebugOS.Bochs
 
         public RegisterSet Registers { get; private set; }
         
-        
         public event EventHandler Continued;
         public event EventHandler Disconnected;
         public event EventHandler Suspended;
         public event EventHandler ArchitectureChanged;
-        
-        public event EventHandler<RegistersChangedEventArgs> RefreshRegisters;
 
-        public IEnumerable<Breakpoint> Breakpoints
+        public event EventHandler<BreakpointChangedEventArgs> BreakpointSet;
+        public event EventHandler<BreakpointChangedEventArgs> BreakpointCleared;
+        public event EventHandler<RegistersChangedEventArgs>  RefreshRegisters;
+
+        public BreakpointCollection Breakpoints
         {
-            get { return this.breakpoints.ToArray(); }
+            get { return new BreakpointCollection(this.breakpoints); }
         }
         public ObjectCodeFile[] IncludedObjectFiles
         {
@@ -78,9 +79,6 @@ namespace DebugOS.Bochs
             this.connector.RegisterUpdated += this.OnRegistersUpdated;
         }
 
-
-
-
         private void AssertPaused()
         {
             if (this.CurrentStatus != DebugStatus.Suspended)
@@ -102,19 +100,20 @@ namespace DebugOS.Bochs
             }
         }
 
-        public void ClearBreakpoint(Breakpoint breakpoint)
+        public void ClearBreakpoint(Address address)
         {
             this.AssertPaused();
 
             // Get the breakpoint
-            int index = this.breakpoints.IndexOf(breakpoint);
-            if (index == -1)
-            {
-                throw new Exception("Unknown breakpoint, cannot clear");
+            Breakpoint bp = this.Breakpoints.GetBreakpoint(address);
+            if (bp == null) throw new Exception("Unknown breakpoint, cannot clear");
+
+            bp.MarkDeactivated();
+
+            // Fire the event
+            if (this.BreakpointCleared != null) {
+                this.BreakpointCleared(this, new BreakpointChangedEventArgs(bp));
             }
-            // Clear the breakpoint
-            this.breakpoints[index].IsActive = false;
-            this.connector.ClearBreakpoint(index);
         }
 
         public void Continue()
@@ -170,9 +169,20 @@ namespace DebugOS.Bochs
             this.connector.BeginReadMemory(address, length, callback);
         }
 
-        public void SetBreakpoint(Breakpoint breakpoint)
+        public Breakpoint SetBreakpoint(Address address)
         {
-            this.connector.SetBreakpoint(breakpoint);
+            this.AssertPaused();
+            this.connector.SetBreakpoint(address);
+
+            var bp = new Breakpoint(address);
+            this.breakpoints.Add(bp);
+
+            // Fire event
+            if (this.BreakpointSet != null) {
+                this.BreakpointSet(this, new BreakpointChangedEventArgs(bp));
+            }
+
+            return bp;
         }
 
         public void Step()
@@ -218,7 +228,7 @@ namespace DebugOS.Bochs
             // Update breakpoint
             foreach (Breakpoint bp in this.breakpoints)
             {
-                if (bp.Address == address) {
+                if (bp.IsActive && bp.Address == address) {
                     this.CurrentBreakpoint = bp; break;
                 }
             }

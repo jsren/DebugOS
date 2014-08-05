@@ -23,7 +23,7 @@ namespace DebugOS
         /// </summary>
 		public TabControl()
 		{
-            this.selectedIndex = 0;
+            this.selectedIndex = -1;
             this.tabs          = new List<TabItem>();
 
 			this.InitializeComponent();
