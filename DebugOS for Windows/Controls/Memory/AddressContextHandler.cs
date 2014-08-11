@@ -45,13 +45,18 @@ namespace DebugOS
             if (addresses.Count != 0 && Application.Debugger != null &&
                 Application.Debugger.CurrentObjectFile != null)
             {
-                foreach (var sym in Application.Debugger.CurrentObjectFile.SymbolTable)
+                foreach (ObjectCodeFile file in Application.Session.LoadedImages)
                 {
                     foreach (Address address in addresses)
                     {
-                        if (sym.Value == address.Value && sym.Value != 0)
+                        // Only accept physical addresses
+                        if (address.Type != AddressType.Physical) continue;
+
+                        SymbolEntry sym = file.SymbolTable.GetSymbol(address.Value);
+
+                        if (sym != null && sym.Value != 0)
                         {
-                            yield return new SymbolContextItem(sym);
+                            yield return new SymbolContextItem(file.GetCode(sym.Name), sym);
                         }
                     }
                 }

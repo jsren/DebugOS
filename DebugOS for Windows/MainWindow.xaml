@@ -122,7 +122,6 @@
 					<SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
 				</GridSplitter.Background>
 			</GridSplitter>
-			<local:StatusBar x:Name="statusbar" Grid.ColumnSpan="3" Grid.Row="3"/>
 			<GridSplitter Grid.Column="1" Margin="4.8,0,0,0" Grid.Row="1" Width="2" Grid.RowSpan="2" HorizontalAlignment="Left">
 				<GridSplitter.Background>
 					<SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
@@ -134,6 +133,7 @@
 				</GridSplitter.Background>
 			</GridSplitter>
 			<Stack:StackViewer Margin="1,7,0,4" Grid.Row="1"/>
+			<local:StatusBar x:Name="statusbar" Grid.ColumnSpan="3" Grid.Row="3"/>
 		</Grid>
 	</Grid>
 </Window>

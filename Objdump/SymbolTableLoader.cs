@@ -1,6 +1,6 @@
 ﻿/* SymbolTableLoader.cs - (c) James S Renwick 2014
  * -----------------------------------------------
- * Version 1.2.0
+ * Version 1.2.1
  * 
  * This code file contains the logic for parsing and loading
  * a symbol table from the output produced by objdump.
@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace DebugOS.Loaders
+namespace DebugOS.Loaders.Objdump
 {
     /// <summary>
     /// Helper class facilitating symbol table loading.

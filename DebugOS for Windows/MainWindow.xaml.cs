@@ -1,6 +1,6 @@
 ﻿/* MainWindow.xaml.cs - (c) James S Renwick 2014
  * ---------------------------------------------
- * Version 1.5.4
+ * Version 1.6.1
  * 
  */
 using System;
@@ -42,9 +42,10 @@ namespace DebugOS
             this.contextPopup.Handlers.Add(new SymbolContextHandler());
 
             // Add initial top-level menu items
-            menubar.AddItem("", new MenuItem() { Header = "_Debug" });
-            menubar.AddItem("", new MenuItem() { Header = "_Settings" });
-            menubar.AddItem("", new MenuItem() { Header = "_Help" });
+            menubar.AddItem("", new MenuItem(top:true) { Header = "_Debug" });
+            menubar.AddItem("", new MenuItem(top:true) { Header = "_Settings" });
+            menubar.AddItem("", new MenuItem(top:true) { Header = "_View" });
+            menubar.AddItem("", new MenuItem(top:true) { Header = "_Help" });
 			// Add intitial second-level menu items
             var configItem = new MenuItem() { Header = "Configure DebugOS..."};
             configItem.Clicked += (_) => new ConfigurationDialog().ShowDialog();
@@ -65,51 +66,31 @@ namespace DebugOS
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Add extension UI elements
-            foreach (var extension in App.LoadedExtensions)
+            foreach (Extension extension in Application.LoadedExtensions)
             {
                 App.SplashScreen.Message = "Loading extension " + extension.Name;
+                var ext = extension.GetInterface<IUIExtension>();
 
-                try { extension.SetupUI(this); }
-                catch (Exception x) {
-                    Console.WriteLine("[ERROR] Error loading extension UI: " + x.Message);
+                if (ext != null)
+                {
+                    try { ext.SetupUI(this); }
+                    catch (Exception x)
+                    {
+                        Console.WriteLine("[ERROR] Error loading extension UI: " + x.Message);
+                    }
                 }
             }
-
             // Initialise code view
             CodeViewer.Initialise();
 
             // Close splash screen
             App.SplashScreen.Dispatcher.InvokeShutdown();
 
-            // If we have no debugger, open the debugger selector
-            // TODO: MOVE ALL THIS!!!
-            if (Application.Debugger == null)
-            {
-                // First try to load from cmd-line args
-                string target   = Application.Arguments["-t"] ?? Application.Arguments["-target"];
-                string debugger = Application.Arguments["-d"] ?? Application.Arguments["-debugger"];
-                string session  = Application.Arguments["-s"] ?? Application.Arguments["-session"];
-
-                // Load from a previous session
-                if (session != null)
-                {
-                    try 
-                    {
-                        Application.Session = DebugSession.Load(session);
-
-                        target   = Application.Session.ImageFilepath;
-                        debugger = Application.Session.Debugger;
-                    }
-                    catch (Exception x) {
-                        MessageBox.Show("Error loading previous session: " + x.ToString());
-                    }
-                }
-                // Otherwise, create new
-                else this.OnNewSession(target, debugger);
-            }
+            // Invoke new session dialog on empty session
+            if (Application.Session == null) this.OnNewSession();
         }
 
-        void OnNewSession(string target = null, string debugger = null, string architecture = null)
+        void OnNewSession(string debugger = null, string architecture = null)
         {
             // Clear the UI
             var ids = panels.Keys.ToArray();
@@ -119,39 +100,7 @@ namespace DebugOS
                 this.RemoveMainPanel(ids[i]);
             }
 
-            // If not present, prompt the user via the GUI
-            if (target == null || debugger == null || architecture == null)
-            {
-                var dialog = new NewSessionDialog();
-
-                if (target       != null ) dialog.ImagePath    = target;
-                if (debugger     != null)  dialog.DebuggerName = debugger;
-                if (architecture != null)  dialog.Architecture = architecture;
-
-                if (dialog.ShowDialog().Value) // This always has value
-                {
-                    target       = dialog.ImagePath;
-                    debugger     = dialog.DebuggerName;
-                    architecture = dialog.Architecture;
-                }
-            }
-
-            // Note that target can be empty
-            if (target != null && debugger != null && architecture != null)
-            {
-                var list = App.LoadedArchitectures.Where((arch) => arch.ID == architecture);
-
-                if (list.Count() == 0) throw new Exception("Unknown architecture: " + architecture);
-
-                // Create a new session
-                Application.Session = new DebugSession
-                (
-                    debugger,
-                    App.LoadedExtensions.Select((ex) => ex.Name).ToArray(), 
-                    target,
-                    list.First()
-                );
-            }
+            new NewSessionDialog().ShowDialog();
         }
 		
         // Toggles between Maximised and Restored (Normal) window states
@@ -254,7 +203,7 @@ namespace DebugOS
             else this.RemoveMainPanel(pairs.First().Key);
         }
 
-        public void AddMenuItem(string path, IMenuItem item)
+        public void AddMenuItem(IMenuItem item, string path)
         {
             // Ensure item is a WPF Menu Item
             if (item.GetType() != typeof(MenuItem)) {
@@ -266,7 +215,7 @@ namespace DebugOS
         int lastTabID = 1;
         Dictionary<int, MainPanel> panels = new Dictionary<int,MainPanel>();
 
-        public int AddMainPanel(PanelLocation preferredLocation, IMainPanel panel)
+        public int AddMainPanel(IMainPanel panel, PanelLocation preferredLocation)
         {
             if (lastTabID == Int32.MaxValue) throw new IndexOutOfRangeException();
 
@@ -281,7 +230,12 @@ namespace DebugOS
                 this.RemoveMainPanel((MainPanel)sender);
             };
 
-            if (preferredLocation.Side == PanelSide.Left)
+            if (preferredLocation.Side == PanelSide.Any)
+            {
+                this.leftTabControl.AddTab(mainPanel.GetTabItem());
+                preferredLocation = new PanelLocation(PanelSide.Left);
+            }
+            else if (preferredLocation.Side == PanelSide.Left)
             {
                 this.leftTabControl.AddTab(mainPanel.GetTabItem());
             }
@@ -295,6 +249,8 @@ namespace DebugOS
             mainPanel.Location = preferredLocation;
 
             panels.Add(lastTabID, mainPanel);
+            mainPanel.IsOpen = true;
+
             return lastTabID++;
         }
 
@@ -323,9 +279,6 @@ namespace DebugOS
         public IToolbarItem NewToolbarItem(bool isToggle = false) {
             return new ToolbarItem(isToggle);
         }
-        Windows.IToolbarItem Windows.IDebugUI.NewToolbarItem() {
-            return new ToolbarItem();
-        }
         Windows.IToolbarItem Windows.IDebugUI.NewToolbarItem(bool isToggle) {
             return new ToolbarItem(isToggle);
         }
@@ -336,6 +289,20 @@ namespace DebugOS
         public void InvokeMethod(Delegate @delegate, params object[] args)
         {
             this.Dispatcher.Invoke(@delegate, args);
+        }
+
+        public void AddSearchCategory(DebugOS.ISearchCategory category) {
+            this.statusbar.smartSearch.AddCategory(category);
+        }
+        public void RemoveSearchCategory(DebugOS.ISearchCategory category) {
+            this.statusbar.smartSearch.RemoveCategory(category);
+        }
+
+        public void OpenSourceView(string sourcePath) {
+            CodeViewer.OpenCodeView(sourcePath);
+        }
+        public void OpenAssemblyView(CodeUnit unit) {
+            CodeViewer.OpenCodeView(unit);
         }
     }
 }

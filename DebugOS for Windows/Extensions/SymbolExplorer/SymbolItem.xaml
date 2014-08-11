@@ -1,0 +1,40 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="DebugOS.SymbolItem"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="28.497">
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="44"/>
+			<ColumnDefinition/>
+			<ColumnDefinition Width="102"/>
+			<ColumnDefinition Width="119"/>
+		</Grid.ColumnDefinitions>
+		<TextBlock x:Name="nameText" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Column="1"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Symbol Name"/></TextBlock>
+		<TextBlock x:Name="valueText" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Column="2"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Address/Value"/></TextBlock>
+		<TextBlock x:Name="typeText" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Column="3"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Symbol Type"/></TextBlock>
+		<Grid x:Name="bpGrid" Margin="0" Background="#00000000" MouseLeftButtonUp="OnToggleBP" HorizontalAlignment="Center" VerticalAlignment="Center">
+			<Ellipse HorizontalAlignment="Left" Height="15.333" VerticalAlignment="Center" Width="15.333" Opacity="0.295" StrokeThickness="2">
+				<Ellipse.Stroke>
+					<SolidColorBrush Color="{DynamicResource PrimaryColour}"/>
+				</Ellipse.Stroke>
+			</Ellipse>
+			<Ellipse x:Name="bpEllipse" HorizontalAlignment="Left" Height="15.333" VerticalAlignment="Center" Width="15.333" Visibility="Hidden">
+				<Ellipse.Fill>
+					<SolidColorBrush Color="{DynamicResource PrimaryColour}"/>
+				</Ellipse.Fill>
+			</Ellipse>
+		</Grid>
+	</Grid>
+</UserControl>

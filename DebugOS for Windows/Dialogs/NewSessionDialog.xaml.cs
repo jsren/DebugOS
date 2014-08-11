@@ -51,10 +51,13 @@ namespace DebugOS
 			this.InitializeComponent();
 
             // Get the names of the available debuggers
-            foreach (Extension e in App.LoadedExtensions)
+            foreach (Extension e in Application.LoadedExtensions)
             {
-                if (e.HasDebugger) {
-                    this.debuggerCombo.Items.Add(e.DebuggerName);
+                var ext = e.GetInterface<IDebuggerExtension>();
+
+                if (ext != null)
+                {
+                    this.debuggerCombo.Items.Add(ext.Name);
                 }
             }
             // Select the first item
@@ -64,7 +67,7 @@ namespace DebugOS
             }
 
             // Get the names of the available architectures
-            foreach (Architecture a in App.LoadedArchitectures)
+            foreach (Architecture a in Application.LoadedArchitectures)
             {
                 this.archCombo.Items.Add(a.ID);
             }
@@ -73,7 +76,6 @@ namespace DebugOS
             {
                 this.archCombo.SelectedIndex = 0;
             }
-
 		}
 
 		private void OnBrowseClick(object sender, System.Windows.RoutedEventArgs e)
@@ -97,6 +99,13 @@ namespace DebugOS
 
 		private void OnBeginClick(object sender, System.Windows.RoutedEventArgs e)
 		{
+            // Actually begin a new session
+            Loader.NewSession((string)this.debuggerCombo.SelectedItem, 
+                (string)this.archCombo.SelectedItem);
+
+            // Load the initial binary
+            Loader.LoadImage(this.imgPathText.Text);
+
             this.DialogResult = true;
             this.Close();
 		}
@@ -125,7 +134,7 @@ namespace DebugOS
             {
                 try
                 {
-                    Application.Session = DebugSession.Load(dialog.FileName);
+                    Loader.LoadSession(dialog.FileName);
                 }
                 catch (Exception x)
                 {

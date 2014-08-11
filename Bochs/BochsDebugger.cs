@@ -1,6 +1,6 @@
 ﻿/* BochsDebugger.cs - (c) James S Renwick 2014
  * -------------------------------------------
- * Version 1.4.0
+ * Version 1.5.0
  */
 using System;
 using System.Collections.Generic;
@@ -11,10 +11,9 @@ namespace DebugOS.Bochs
     public class BochsDebugger : IDebugger
     {
         // Private variables
-        private LiveCodeUnit         liveCodeUnit;
-        private BochsConnector       connector;
-        private List<Breakpoint>     breakpoints;
-        private List<ObjectCodeFile> objectFiles;
+        private LiveCodeUnit     liveCodeUnit;
+        private BochsConnector   connector;
+        private List<Breakpoint> breakpoints;
 
         private bool breakOnModeChange; // When true, breaks when the CPU changes mode
 
@@ -44,10 +43,6 @@ namespace DebugOS.Bochs
         {
             get { return new BreakpointCollection(this.breakpoints); }
         }
-        public ObjectCodeFile[] IncludedObjectFiles
-        {
-            get { return this.objectFiles.ToArray(); }
-        }
 
         /// <summary>
         /// Initializes and connects to a new Bochs debugger.
@@ -63,7 +58,6 @@ namespace DebugOS.Bochs
 
             // Initialise locals
             this.breakpoints  = new List<Breakpoint>();
-            this.objectFiles  = new List<ObjectCodeFile>();
             this.liveCodeUnit = new LiveCodeUnit();
 
             // Make initial register listing with all dismissive
@@ -132,23 +126,6 @@ namespace DebugOS.Bochs
         {
             this.CurrentStatus = DebugStatus.Disconnected;
             this.connector.Disconnect();
-        }
-
-        public void ExcludeObjectFile(ObjectCodeFile file)
-        {
-            if (this.CurrentObjectFile == file)
-            {
-                this.CurrentObjectFile = null;
-            }
-            this.objectFiles.Remove(file);
-        }
-
-        public void IncludeObjectFile(ObjectCodeFile file)
-        {
-            if (!this.objectFiles.Contains(file))
-            {
-                this.objectFiles.Add(file);
-            }
         }
 
         public byte[] ReadRegister(string register)
@@ -234,7 +211,7 @@ namespace DebugOS.Bochs
             }
 
             // Update object file
-            foreach (ObjectCodeFile file in this.objectFiles)
+            foreach (ObjectCodeFile file in Application.Session.LoadedImages)
             {
                 if (file.Sections[0].LoadMemoryAddress <= address.Value &&
                     file.Sections[0].LoadMemoryAddress + file.Size > address.Value)

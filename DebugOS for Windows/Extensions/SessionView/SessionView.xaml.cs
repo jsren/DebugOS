@@ -14,14 +14,18 @@ namespace DebugOS
 		{
 			this.InitializeComponent();
 
-            Application.DebuggerChanged += () => this.UpdateInfo();
+            if (Application.Session != null)
+            {
+                Application.Session.ImageLoaded  += (s,e) => this.UpdateInfo();
+                Application.Session.ImageRemoved += (s,e) => this.UpdateInfo();
 
-            this.UpdateInfo();
+                this.UpdateInfo();
+            }
 		}
 
         public void UpdateInfo()
         {
-            if (Application.Debugger == null)
+            if (Application.Session == null)
             {
                 this.fileList.Items.Clear();
             }
@@ -30,10 +34,11 @@ namespace DebugOS
                 HashSet<string> files = new HashSet<string>(PathComparer.OSIndependentPath);
 
                 // Search for source files
-                foreach (ObjectCodeFile obj in Application.Debugger.IncludedObjectFiles)
+                foreach (ObjectCodeFile obj in Application.Session.LoadedImages)
                 {
-                    foreach (CodeUnit unit in obj.Code) {
-                        files.Add(unit.SourceFilepath.Trim());
+                    foreach (string path in obj.SourceFiles)
+                    {
+                        files.Add(path);
                     }
                 }
 
@@ -44,18 +49,12 @@ namespace DebugOS
                     if (!string.IsNullOrWhiteSpace(file))
                     {
                         var newItem = new SourceFileItem(file);
-                        newItem.MouseDoubleClick += FileItemDoubleClick;
+                        newItem.MouseDoubleClick += OnFileDoubleClick;
 
                         this.fileList.Items.Add(newItem);
                     }
                 }
             }
-        }
-
-        void FileItemDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            // Open a new or existing code view
-            
         }
 
         private void OnFileDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

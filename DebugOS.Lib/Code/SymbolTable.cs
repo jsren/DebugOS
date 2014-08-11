@@ -5,7 +5,7 @@ namespace DebugOS
     /// <summary>
     /// A table holding a set of symbols for an object file.
     /// </summary>
-    public sealed class SymbolTable : IEnumerable<SymbolEntry>
+    public sealed class SymbolTable : IEnumerable<SymbolEntry>, IDebugResource
     {
         private readonly SymbolEntry[] symbols;
 
@@ -35,6 +35,19 @@ namespace DebugOS
         {
             for (int i = 0; i < symbols.Length; i++)  {
                 if (symbols[i].Name == Name) return symbols[i];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the symbol with the given value.
+        /// </summary>
+        /// <param name="value">The integer value of the symbol to get.</param>
+        /// <returns>A symbol entry.</returns>
+        public SymbolEntry GetSymbol(long value)
+        {
+            for (int i = 0; i < symbols.Length; i++)  {
+                if (symbols[i].Value == value) return symbols[i];
             }
             return null;
         }

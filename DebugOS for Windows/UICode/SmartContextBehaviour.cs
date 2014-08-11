@@ -36,6 +36,8 @@ namespace DebugOS
             this.popup = new Popup() { Child = new SmartContext() };
             this.popup.MouseLeave += (s, v) => this.CloseContextPopup();
 
+            this.popup.IsVisibleChanged += App.OnPopupVisChange;
+
             this.timer = new Timer(1500) { AutoReset = true };
             this.timer.Elapsed += OnTimerTick;
             this.timer.Start();
@@ -43,24 +45,29 @@ namespace DebugOS
             this.Handlers = new List<ISmartContextHandler>();
         }
 
-        void OnTimerTick(object sender, ElapsedEventArgs e)
+        HitTestResultBehavior ProcessHitTest(HitTestResult result)
         {
-            this.parent.Dispatcher.Invoke((Action)delegate
-            {
-                var hit = VisualTreeHelper.HitTest(this.parent, Mouse.GetPosition(this.parent));
+            UIElement obj = result.VisualHit as UIElement;
 
-                if (hit != null && hit.VisualHit != null && hit.VisualHit is UIElement)
+            if (obj == null || !obj.IsVisible)
+            {
+                return HitTestResultBehavior.Continue;
+            }
+            else
+            {
+                this.parent.Dispatcher.BeginInvoke((Action)delegate
                 {
+
                     string content = null;
 
                     // Get control string content
-                    if (hit.VisualHit is TextBlock)
+                    if (obj is TextBlock)
                     {
-                        content = ((TextBlock)hit.VisualHit).Text;
+                        content = ((TextBlock)obj).Text;
                     }
-                    else if (hit.VisualHit is ContentControl)
+                    else if (obj is ContentControl)
                     {
-                        var ctrl = (ContentControl)hit.VisualHit;
+                        var ctrl = (ContentControl)obj;
 
                         if (ctrl.Content is string)
                         {
@@ -71,9 +78,26 @@ namespace DebugOS
                     // Display the context popup
                     if (content != null)
                     {
-                        this.ShowContextPopup(content, (UIElement)hit.VisualHit);
+                        this.ShowContextPopup(content, obj);
                     }
-                }
+                });
+
+                // We're done here
+                return HitTestResultBehavior.Stop;
+            }
+
+        }
+
+        void OnTimerTick(object sender, ElapsedEventArgs e)
+        {
+            // When popups are open, just return
+            if (App.IsPopupOpen) return;
+
+            this.parent.Dispatcher.Invoke((Action)delegate
+            {
+                // Hit test
+                VisualTreeHelper.HitTest(this.parent, null, ProcessHitTest,
+                    new PointHitTestParameters(Mouse.GetPosition(this.parent)));
             });
         }
 

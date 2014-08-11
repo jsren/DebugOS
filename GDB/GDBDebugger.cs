@@ -1,6 +1,6 @@
 ﻿/* GDBDebugger.cs - (c) James S Renwick 2014
  * -----------------------------------------
- * Version 1.2.0
+ * Version 1.3.0
  */
 using System;
 using System.Collections.Generic;
@@ -11,10 +11,8 @@ namespace DebugOS.GDB
 {
     public class GDBDebugger : IDebugger
     {
-        private GDBConnector connector;
-
-        private List<Breakpoint>     breakpoints;
-        private List<ObjectCodeFile> objectFiles;
+        private GDBConnector     connector;
+        private List<Breakpoint> breakpoints;
 
         private Dictionary<Register, byte[]> registers;
 
@@ -46,7 +44,6 @@ namespace DebugOS.GDB
 
             // Initialise locals
             this.breakpoints = new List<Breakpoint>();
-            this.objectFiles = new List<ObjectCodeFile>();
 
             // Set the current architecture to the session one
             this.CurrentArchitecture = Application.Session.Architecture;
@@ -115,7 +112,7 @@ namespace DebugOS.GDB
             }
 
             // Update object file
-            foreach (ObjectCodeFile file in this.objectFiles)
+            foreach (ObjectCodeFile file in Application.Session.LoadedImages)
             {
                 if (file.Sections[0].LoadMemoryAddress <= this.CurrentAddress &&
                     file.Sections[0].LoadMemoryAddress + file.Size > this.CurrentAddress)
@@ -207,11 +204,6 @@ namespace DebugOS.GDB
             get { return new BreakpointCollection(this.breakpoints); }
         }
 
-        public ObjectCodeFile[] IncludedObjectFiles
-        {
-            get { return this.objectFiles.ToArray(); }
-        }
-
         public byte[] ReadRegister(string register)
         {
             byte[] data   = this.registers[this.Registers[register]];
@@ -243,25 +235,6 @@ namespace DebugOS.GDB
         public void WriteMemory(Address address, byte[] data)
         {
             throw new NotImplementedException();
-        }
-
-        public void IncludeObjectFile(ObjectCodeFile file)
-        {
-            this.objectFiles.Add(file);
-
-            // Set a breakpoint at the EP if it's the primary image
-            if (PathComparer.OSIndependentPath.Equals(file.Filepath,
-                Application.Session.ImageFilepath))
-            {
-                var sym = file.SymbolTable.GetSymbol("_start");
-
-                if (sym != null) this.SetBreakpoint(sym.Value);
-            }
-        }
-
-        public void ExcludeObjectFile(ObjectCodeFile file)
-        {
-            this.objectFiles.Remove(file);
         }
     }
 }

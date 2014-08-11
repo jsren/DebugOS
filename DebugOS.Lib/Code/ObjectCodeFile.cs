@@ -1,8 +1,9 @@
 ﻿/* ObjectCodeFile.cs - (c) James S Renwick 2014
  * --------------------------------------------
- * Version 1.1.0
+ * Version 1.3.0
  */
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DebugOS
@@ -10,7 +11,7 @@ namespace DebugOS
     /// <summary>
     /// An object representing an object code file.
     /// </summary>
-    public sealed class ObjectCodeFile
+    public sealed class ObjectCodeFile : IDebugResource
     {
         /// <summary>The actual load address.</summary>
         private long loadAddress;
@@ -29,6 +30,8 @@ namespace DebugOS
         public CodeUnit[] Code { get; private set; }
         /// <summary>The total runtime length of the object file in bytes.</summary>
         public long Size { get; private set; }
+        /// <summary>An array of paths to source files.</summary>
+        public String[] SourceFiles { get; private set; }
 
         /// <summary>Gets or sets the actual load address of the object file.</summary>
         public long ActualLoadAddress
@@ -38,6 +41,7 @@ namespace DebugOS
             {
                 this.loadAddress = value;
 
+                // Adjust the actual load address of each code unit
                 long delta = this.loadAddress - this.RequestedLoadAddress;
                 if (delta != 0)
                 {
@@ -129,6 +133,14 @@ namespace DebugOS
             if (this.Sections != null)
             this.Size = this.Sections.Sum(
                 sec => sec.Flags.HasFlag(SectionFlags.Load) ? (long)sec.Size : 0);
+
+            // Get unique source file paths
+            var tmpFiles = new HashSet<string>();
+
+            foreach (CodeUnit unit in this.Code) {
+                tmpFiles.Add(unit.SourceFilepath.Trim());
+            }
+            this.SourceFiles = tmpFiles.ToArray();
         }
     }
 }

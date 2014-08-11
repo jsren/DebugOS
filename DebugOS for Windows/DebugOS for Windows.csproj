@@ -41,6 +41,24 @@
     <StartupObject>
     </StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="PresentationFramework.Aero" />
@@ -66,6 +84,9 @@
     <Compile Include="Controls\SmartContext.xaml.cs">
       <DependentUpon>SmartContext.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\SymbolExplorer\SymbolExplorer.xaml.cs">
+      <DependentUpon>SymbolExplorer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\Configuration\ConfigCategoryItem.xaml.cs">
       <DependentUpon>ConfigCategoryItem.xaml</DependentUpon>
     </Compile>
@@ -79,7 +100,7 @@
     <Compile Include="Controls\Memory\MemoryView.xaml.cs">
       <DependentUpon>MemoryView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SessionView.xaml.cs">
+    <Compile Include="Extensions\SessionView\SessionView.xaml.cs">
       <DependentUpon>SessionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\Stack\StackDividerItem.xaml.cs">
@@ -125,8 +146,17 @@
       <DependentUpon>GDBConfiguration.xaml</DependentUpon>
     </Compile>
     <Compile Include="Extensions\GDB\GDBExtension.cs" />
-    <Compile Include="Extensions\QemuExtension.cs" />
     <Compile Include="Extensions\SessionView\SessionViewExtension.cs" />
+    <Compile Include="Extensions\SymbolExplorer\SymbolExplorerExtension.cs" />
+    <Compile Include="Controls\MainUI\Smart Search\SmartSearchBox.xaml.cs">
+      <DependentUpon>SmartSearchBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MainUI\Smart Search\SmartSearchCategory.xaml.cs">
+      <DependentUpon>SmartSearchCategory.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\MainUI\Smart Search\SmartSearchResult.xaml.cs">
+      <DependentUpon>SmartSearchResult.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>
@@ -139,6 +169,9 @@
     <Compile Include="Controls\FileInfo\SymbolContextItem.xaml.cs">
       <DependentUpon>SymbolContextItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\SymbolExplorer\SymbolItem.xaml.cs">
+      <DependentUpon>SymbolItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UICode\CodeViewer.cs" />
     <Compile Include="UICode\DragBehaviour.cs" />
     <Compile Include="UICode\MainPanel.cs" />
@@ -150,6 +183,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\SmartContext.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Extensions\SymbolExplorer\SymbolExplorer.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -222,7 +259,7 @@
     <Compile Include="Controls\Register\RegisterItem.xaml.cs">
       <DependentUpon>RegisterItem.xaml</DependentUpon>
     </Compile>
-    <Page Include="Controls\SessionView.xaml">
+    <Page Include="Extensions\SessionView\SessionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -279,6 +316,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Controls\MainUI\Smart Search\SmartSearchBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\MainUI\Smart Search\SmartSearchCategory.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\MainUI\Smart Search\SmartSearchResult.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SplashWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -292,6 +341,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\FileInfo\SymbolContextItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Extensions\SymbolExplorer\SymbolItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -391,6 +444,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\breakpoint.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\bank-26.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ankh-26.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

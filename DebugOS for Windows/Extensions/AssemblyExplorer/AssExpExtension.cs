@@ -1,35 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DebugOS.Extensions
 {
-    public class AssemblyExplorerExtension : IUIExtension
+    public sealed class AssemblyExplorerExtension : IUIExtension
     {
-        public string Name { get { return "Assembly Explorer"; } }
+        public string Name 
+        { 
+            get { return "Assembly Explorer"; }
+        }
 
         public void Initialise(string[] args)
         {
 
         }
 
-        public void SetupUI(DebugOS.IDebugUI @interface)
+        public void SetupUI(DebugOS.IDebugUI UI)
         {
-            if (@interface.Type != GUIType.WPF) {
+            // Shows a WPF component only
+            if (UI.Type != GUIType.WPF)
                 throw new Exception("This extension must be run under WPF.");
-            }
 
-            IDebugUI UI = @interface as IDebugUI;
-
-            /* == Assembly Explorer == */
-            IMenuItem assemblyExplorerMenuItem = UI.NewMenuItem();
-            assemblyExplorerMenuItem.Label     = "Configure Loaded Assemblies...";
+            // Add the menu item
+            IMenuItem assemblyExplorerMenuItem = UI.NewMenuItem(label:"Configure Loaded Assemblies...");
             assemblyExplorerMenuItem.Clicked  += (o) => new AssemblyExplorer().ShowDialog();
 
-            UI.AddMenuItem("Debug", assemblyExplorerMenuItem);
+            UI.AddMenuItem(assemblyExplorerMenuItem, "Debug");
         }
-
     }
 }

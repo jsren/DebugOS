@@ -1,0 +1,32 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:local="clr-namespace:DebugOS"
+	mc:Ignorable="d"
+	x:Class="DebugOS.SmartSearchCategory"
+	x:Name="UserControl"
+	d:DesignWidth="273" d:DesignHeight="62.687">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="13.915"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition/>
+		</Grid.ColumnDefinitions>
+		<TextBlock x:Name="headerText" TextWrapping="Wrap" FontSize="10.667" Opacity="0.6" VerticalAlignment="Top" Margin="0,0,7,0" Grid.RowSpan="2"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource SecondaryLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="Commands"/></TextBlock>
+		<Path Data="M407.35333,-199.33333 L626.12928,-199.33333" Margin="0,7.593,0,5.322" Stretch="Fill" VerticalAlignment="Center" Opacity="0.6" Grid.Column="1">
+			<Path.Stroke>
+				<SolidColorBrush Color="{DynamicResource SecondaryLabel}"/>
+			</Path.Stroke>
+		</Path>
+		<StackPanel x:Name="itemsStack" Margin="3,2,0,0" VerticalAlignment="Top" Grid.Row="1" Grid.ColumnSpan="2">
+		</StackPanel>
+	</Grid>
+</UserControl>

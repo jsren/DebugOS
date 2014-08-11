@@ -441,7 +441,7 @@ namespace DebugOS.GDB
         {
             if (this.ownsSocket)
             {
-                this.socket.Dispose();
+                this.socket.Close();
             }
         }
     }

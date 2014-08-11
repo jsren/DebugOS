@@ -1,0 +1,52 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:local="clr-namespace:DebugOS"
+	mc:Ignorable="d"
+	x:Class="DebugOS.SymbolExplorer"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="480" Background="White">
+
+	<Grid x:Name="LayoutRoot">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="34"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<ScrollViewer Grid.Row="1">
+			<VirtualizingStackPanel x:Name="itemStack" VerticalAlignment="Top"/>
+		</ScrollViewer>
+		<Grid Margin="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="44"/>
+				<ColumnDefinition/>
+				<ColumnDefinition Width="102"/>
+				<ColumnDefinition Width="119"/>
+				<ColumnDefinition Width="17"/>
+			</Grid.ColumnDefinitions>
+			<Rectangle Margin="0" Opacity="0.265" Grid.ColumnSpan="5">
+				<Rectangle.Fill>
+					<SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
+				</Rectangle.Fill>
+			</Rectangle>
+			<Rectangle Margin="0,0,0,2" Grid.ColumnSpan="5">
+				<Rectangle.Fill>
+					<SolidColorBrush Color="{DynamicResource SecondaryColour}"/>
+				</Rectangle.Fill>
+			</Rectangle>
+			<TextBlock HorizontalAlignment="Center" Margin="15.2,9.02" TextWrapping="Wrap" VerticalAlignment="Center" Height="15.96" Width="13.6"><TextBlock.Foreground>
+					<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+				</TextBlock.Foreground><Run Language="en-gb" Text="BP"/></TextBlock>
+			<TextBlock HorizontalAlignment="Left" Height="17" Margin="10,8.5,0,8.5" TextWrapping="Wrap" VerticalAlignment="Center" Width="79" Grid.Column="1"><TextBlock.Foreground>
+					<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+				</TextBlock.Foreground><Run Language="en-gb" Text="Symbol Name"/></TextBlock>
+			<TextBlock HorizontalAlignment="Left" Height="17" Margin="10,8.5,0,8.5" TextWrapping="Wrap" VerticalAlignment="Center" Width="79" Grid.Column="2"><TextBlock.Foreground>
+					<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+				</TextBlock.Foreground><Run Language="en-gb" Text="Address/Value"/></TextBlock>
+			<TextBlock HorizontalAlignment="Left" Height="17" Margin="10,8.5,0,8.5" TextWrapping="Wrap" VerticalAlignment="Center" Width="79" Grid.Column="3"><TextBlock.Foreground>
+					<SolidColorBrush Color="{DynamicResource StatusLabel}"/>
+				</TextBlock.Foreground><Run Language="en-gb" Text="Symbol Type"/></TextBlock>
+		</Grid>
+	</Grid>
+</UserControl>

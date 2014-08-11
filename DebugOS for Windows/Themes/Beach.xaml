@@ -16,5 +16,6 @@
     <Color x:Key="TabLabel">#FF272727</Color>
     <Color x:Key="TabBackground">#FFF3F3F3</Color>
     <Color x:Key="DialogTitle">#FF303030</Color>
+    <Color x:Key="SecondaryLabel">#FF303030</Color>
     <!-- Resource dictionary entries should be defined here. -->
 </ResourceDictionary>

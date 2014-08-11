@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DebugOS
 {
-    public class LiveCodeUnit : CodeUnit
+    public class LiveCodeUnit : CodeUnit, IDebugResource
     {
         public List<CodeLine> lines;
 

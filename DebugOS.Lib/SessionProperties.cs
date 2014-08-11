@@ -50,6 +50,7 @@ namespace DebugOS
         /// Creates a dynamic version of the SessionProperties object which routes
         /// requests for properties to the indexer.
         /// </summary>
+        [Obsolete]
         public DynamicMetaObject GetMetaObject(System.Linq.Expressions.Expression parameter)
         {
             return new DynamicSessionProperties(parameter, this);

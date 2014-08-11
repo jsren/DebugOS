@@ -4,7 +4,7 @@ using NumberStyles = System.Globalization.NumberStyles;
 
 namespace DebugOS
 {
-    public static class Utils
+    public static partial class Utils
     {
         static readonly NumberStyles hexNo = NumberStyles.HexNumber;
 
@@ -147,7 +147,7 @@ namespace DebugOS
             }
         }
 
-        public static string GetWindowsPath(string path)
+        public static string GetPlatformPath(string path)
         {
             const string cygwinStart = "/cygdrive/";
 

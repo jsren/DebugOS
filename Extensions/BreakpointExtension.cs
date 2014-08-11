@@ -1,7 +1,10 @@
 ﻿/* BreakpointExtension.cs - (c) James S Renwick 2014
  * -------------------------------------------------
- * Version 1.2.0
+ * Version 1.3.0
  */
+using System;
+using System.Collections.Generic;
+
 namespace DebugOS.Extensions
 {
     public class BreakpointExtension : IUIExtension
@@ -19,6 +22,69 @@ namespace DebugOS.Extensions
             return;
         }
 
+        private sealed class SearchCategory : ISearchCategory
+        {
+            public string Header { get { return "Breakpoints"; } }
+
+            public IEnumerable<SearchResult> Reset()
+            {
+                return new SearchResult[0];
+            }
+
+            public IEnumerable<SearchResult> GetResults(string searchString)
+            {
+                const long mask = ~(0x1FL);
+
+                if (Application.Debugger == null)
+                {
+                    return new SearchResult[0];
+                }
+
+                try
+                {
+                    ulong addr = Utils.ParseHex64(searchString) - 30;
+
+                    var output = new List<SearchResult>();
+
+                    foreach (Breakpoint bp in Application.Debugger.Breakpoints)
+                    {
+                        if (bp.IsActive && (bp.Address.Type == AddressType.Physical || 
+                            (bp.Address.Type == AddressType.Logical && bp.Address.Segment == Segment.Code)))
+                        {
+                            if ((bp.Address.Value & mask) == ((long)addr & mask))
+                            {
+                                string symbol = String.Empty;
+
+                                // Get the symbol name for the code at the breakpoint
+                                if (Application.Session != null)
+                                {
+                                    foreach (ObjectCodeFile file in Application.Session.LoadedImages)
+                                    {
+                                        var unit = file.GetCode(bp.Address.Value);
+                                        if (unit != null)
+                                        {
+                                            symbol = " <" + unit.Symbol + '>';
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // Get the result value string
+                                string value = Utils.GetHexString((ulong)bp.Address.Value, prefix: true) 
+                                    + symbol ?? String.Empty; 
+
+                                // Add the result
+                                output.Add(new SearchResult(value, Properties.Resources.breakpoint));
+                            }
+                        }
+                    }
+                    return output;
+                }
+                catch (FormatException) { return new SearchResult[0]; }
+            }
+        }
+
+
         /// <summary>
         /// Builds the extension's user interface.
         /// </summary>
@@ -32,7 +98,7 @@ namespace DebugOS.Extensions
                 clearAllMenu.Label    = "Clear all breakpoints";
                 clearAllMenu.Clicked += clearAllBreakpoints;
             }
-            UI.AddMenuItem("Debug", clearAllMenu);
+            UI.AddMenuItem(clearAllMenu, "Debug");
 
 
             /* == Toolbar Items == */
@@ -57,6 +123,9 @@ namespace DebugOS.Extensions
 
             // Add the panel to the UI
             UI.AddToolbarPanel(panel);
+
+            // Add the search category
+            UI.AddSearchCategory(new SearchCategory());
         }
 
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
 
 namespace DebugOS.Extensions
 {
@@ -10,6 +6,19 @@ namespace DebugOS.Extensions
     {
         string host = null;
         int    port = 0;
+
+        public string Name
+        {
+            get { return "GDB Debugger Extension"; }
+        }
+        /// <summary>
+        /// Gets the name of the debugger.
+        /// </summary>
+        string IDebuggerExtension.Name
+        {
+            get { return "GDB Debugger"; }
+        }
+
 
         public void Initialise(string[] args)
         {
@@ -55,17 +64,5 @@ namespace DebugOS.Extensions
             Application.Session.Properties["GDBDebugger.Port"] = port.ToString();
             return new GDB.GDBDebugger();
         }
-
-        public string DebuggerName
-        {
-            get { return "GDB Debugger"; }
-        }
-
-        public string Name
-        {
-            get { return "GDB Debugger Extension"; }
-        }
-
-        
     }
 }

@@ -17,6 +17,8 @@ namespace DebugOS
 
         public virtual void MarkDeactivated()
         {
+            Utils.AssertInternal();
+
             this.IsActive = false;
         }
     }

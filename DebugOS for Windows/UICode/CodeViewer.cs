@@ -69,14 +69,14 @@ namespace DebugOS
                     // Create panel
                     var newPanel = new MainPanel()
                     {
-                        Title = Application.Debugger.CurrentCodeUnit.Name,
+                        Title   = unit.Name,
                         Content = new UnitCodeView(unit),
-                        IsOpen = true
+                        IsOpen  = true
                     };
                     // De-register view on close
                     newPanel.Closed += (sender) => codeViews.Remove((MainPanel)sender);
                     // Add panel
-                    handle = App.MainWindow.AddMainPanel(new PanelLocation(), newPanel);
+                    handle = App.MainWindow.AddMainPanel(newPanel, new PanelLocation());
                     codeViews.Add(newPanel, handle);
                 }
                 if (focus) App.MainWindow.FocusMainPanel(handle);
@@ -89,8 +89,8 @@ namespace DebugOS
         {
             int handle = -1;
 
-            // Get a valid Windows path in case it's Cygwin
-            sourceFilepath = Utils.GetWindowsPath(sourceFilepath);
+            // Get a valid path in case it's Cygwin
+            sourceFilepath = Utils.GetPlatformPath(sourceFilepath);
 
             // Get the panel if it is already open
             MainPanel panel = GetCodeView(sourceFilepath) as MainPanel;
@@ -111,7 +111,7 @@ namespace DebugOS
                     // De-register view on close
                     newPanel.Closed += (sender) => codeViews.Remove((MainPanel)sender);
                     // Add panel
-                    handle = App.MainWindow.AddMainPanel(new PanelLocation(PanelSide.Right), newPanel);
+                    handle = App.MainWindow.AddMainPanel(newPanel, new PanelLocation(PanelSide.Right));
                     codeViews.Add(newPanel, handle);
                 }
                 if (focus) App.MainWindow.FocusMainPanel(handle);
@@ -124,23 +124,11 @@ namespace DebugOS
         {
             MainWindow window = App.MainWindow;
 
-            int i = -1;
-
-            if (i != -1)
-            {
-                Application.Debugger.BeginReadMemory(new Address(i), 0x100, (arr) =>
-                    {
-                        System.Windows.MessageBox.Show(Utils.IntFromBytes(arr).ToString());
-                    }
-                );
-            }
-
             MainPanel unitPanel = null;
             MainPanel filePanel = null;
 
             // Check if the current unit is already displayed
             // First look for a unit view
-
             if (Application.Debugger.CurrentCodeUnit == null) return;
 
             unitPanel = (MainPanel)GetCodeView(Application.Debugger.CurrentCodeUnit);

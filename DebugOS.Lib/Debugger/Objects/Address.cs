@@ -35,6 +35,17 @@ namespace DebugOS
             return addr1.Type != addr2.Type || addr1.Value != addr2.Value;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Address) { 
+                return this == (Address)obj; 
+            }
+            else return base.Equals(obj);
+        }
+        public override int GetHashCode() {
+            return Value.GetHashCode() ^ Type.GetHashCode() ^ Segment.GetHashCode();
+        }
+        
         public static implicit operator Address(long value) {
             return new Address(value);
         }

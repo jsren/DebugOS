@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Win32;
+using System.Windows.Forms;
 
 namespace DebugOS.Extensions
 {
@@ -11,6 +11,15 @@ namespace DebugOS.Extensions
         private string   imagePath   = null;
         private string[] args        = null;
         private Process  qemuProcess = null;
+
+        public string Name
+        { 
+            get { return "Qemu Extension"; }
+        }
+        string IDebuggerExtension.Name
+        { 
+            get { return "Qemu Debugger"; }
+        }
 
         public IDebugger LoadDebugger()
         {
@@ -22,35 +31,39 @@ namespace DebugOS.Extensions
 
             if (this.imagePath == null)
             {
-                var dialog = new OpenFileDialog()
+                using (var dialog = new OpenFileDialog()
                 {
                     CheckFileExists = true,
                     Filter          = "Image Files (*.img,*.iso)|*.img;*.iso|All Files (*.*)|*.*",
                     FilterIndex     = 0,
                     Multiselect     = false,
                     Title           = "Select CDROM image to debug"
-                };
-                if (dialog.ShowDialog().GetValueOrDefault())
+                })
+                {
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     this.imagePath = dialog.FileName;
                 }
                 else throw new Exception("Unable to load Qemu - no image path specified.");
+                    }
             }
             if (this.qemuPath == null)
             {
-                var dialog = new OpenFileDialog()
+                using (var dialog = new OpenFileDialog()
                 {
                     CheckFileExists = true,
                     Filter          = "Qemu Executable (qemu-system-*.exe)|qemu-system-*.exe|All Files (*.*)|*.*",
                     FilterIndex     = 0,
                     Multiselect     = false,
                     Title           = "Select the Qemu executable"
-                };
-                if (dialog.ShowDialog().GetValueOrDefault())
+                })
                 {
-                    this.qemuPath = dialog.FileName;
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        this.qemuPath = dialog.FileName;
+                    }
+                    else throw new Exception("Unable to load Qemu - cannot locate executable.");
                 }
-                else throw new Exception("Unable to load Qemu - cannot locate executable.");
             }
 
             // Set session properties
@@ -79,19 +92,17 @@ namespace DebugOS.Extensions
             Application.Session.Properties["GDBDebugger.Host"] = "127.0.0.1";
             Application.Session.Properties["GDBDebugger.Port"] = "2200";
 
-            foreach (Extension ext in App.LoadedExtensions)
+            foreach (Extension ext in Application.LoadedExtensions)
             {
-                if (ext.HasDebugger && ext.DebuggerName == "GDB Debugger")
+                var dbg = ext.GetInterface<IDebuggerExtension>();
+
+                if (dbg != null && dbg.Name == "GDB Debugger")
                 {
-                    return ext.LoadDebugger();
+                    return dbg.LoadDebugger();
                 }
             }
             throw new Exception("Valid GDB debugger not found.");
         }
-
-        public string DebuggerName { get { return "Qemu Debugger"; } }
-
-        public string Name { get { return "Qemu Extension"; } }
 
         public void Initialise(string[] args)
         {

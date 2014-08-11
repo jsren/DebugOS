@@ -6,23 +6,26 @@
 	mc:Ignorable="d"
 	x:Class="DebugOS.SymbolContextItem"
 	x:Name="UserControl"
-	d:DesignWidth="140" d:DesignHeight="91.083" MinWidth="140" FontFamily="Segoe UI" FontSize="12">
+	d:DesignWidth="140" MinWidth="140" FontFamily="Segoe UI" FontSize="12" Height="127.833">
 
-	<Grid Height="96">
+	<Grid Margin="0,8.292,0,2.291">
 		<TextBlock HorizontalAlignment="Left" Margin="0.75,5.667,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50"><TextBlock.Foreground>
 				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
 			</TextBlock.Foreground><Run Language="en-gb" Text="Symbol"/></TextBlock>
 		<TextBlock x:Name="symbolText" Margin="50.75,5.667,19.25,0" VerticalAlignment="Top" Opacity="0.7" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, ElementName=symbolText}"><TextBlock.Foreground>
 				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
 			</TextBlock.Foreground><Run Language="en-gb" Text="&lt;test&gt;"/></TextBlock>
-		<TextBlock HorizontalAlignment="Left" Margin="0.75,30.083,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Opacity="0.7" MouseLeftButtonUp="OnViewSrcClick"><TextBlock.Foreground>
+		<TextBlock HorizontalAlignment="Left" Margin="0.75,48.337,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Opacity="0.7" MouseLeftButtonUp="OnViewAsmClick"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground><Run Language="en-gb" Text="View Assembly"/></TextBlock>
+		<TextBlock HorizontalAlignment="Left" Margin="0.75,69.297,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Text="View in Memory Viewer" Opacity="0.7"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground></TextBlock>
+		<TextBlock x:Name="bpHyper" HorizontalAlignment="Left" Margin="0.75,90.257,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Text="Set Breakpoint" Opacity="0.7" MouseLeftButtonUp="OnBreakpointClick"><TextBlock.Foreground>
+				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
+			</TextBlock.Foreground></TextBlock>
+		<TextBlock HorizontalAlignment="Left" Margin="0.75,27.377,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Opacity="0.7" MouseLeftButtonUp="OnViewSrcClick"><TextBlock.Foreground>
 				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
 			</TextBlock.Foreground><Run Language="en-gb" Text="View Source"/></TextBlock>
-		<TextBlock HorizontalAlignment="Left" Margin="0.75,51.043,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Text="View in Memory Viewer" Opacity="0.7"><TextBlock.Foreground>
-				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
-			</TextBlock.Foreground></TextBlock>
-		<TextBlock x:Name="bpHyper" HorizontalAlignment="Left" Margin="0.75,72.003,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextDecorations="Underline" Cursor="Hand" Text="Set Breakpoint" Opacity="0.7" MouseLeftButtonUp="OnBreakpointClick"><TextBlock.Foreground>
-				<SolidColorBrush Color="{DynamicResource TabLabel}"/>
-			</TextBlock.Foreground></TextBlock>
 	</Grid>
 </UserControl>

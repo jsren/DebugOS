@@ -11,13 +11,15 @@ namespace DebugOS
         Image  icon;
         Bitmap bitmap;
 
-        public MenuItem(bool toggle = false)
+        public MenuItem(bool toggle = false, bool top = false)
         {
             base.IsCheckable = toggle;
 
             base.Click     += (s, e) => { if (this.Clicked != null)      this.Clicked(this); };
             base.Checked   += (s, e) => { if (this.CheckChanged != null) this.CheckChanged(this); };
             base.Unchecked += (s, e) => { if (this.CheckChanged != null) this.CheckChanged(this); };
+
+            if (!top) base.IsVisibleChanged += App.OnPopupVisChange;
         }
 
         public event Action<object> Clicked;
@@ -31,7 +33,8 @@ namespace DebugOS
             }
             set
             {
-                throw new NotImplementedException();
+                if (value != null)
+                    throw new NotImplementedException();
             }
         }
 
@@ -48,7 +51,7 @@ namespace DebugOS
             {
                 if (value == null)
                 {
-                    base.Icon = this.Icon = null;
+                    base.Icon = this.icon = null;
                 }
                 else
                 {

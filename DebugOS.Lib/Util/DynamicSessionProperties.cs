@@ -1,6 +1,6 @@
 ﻿/* DynamicSessionProperties.cs - (c) James S Renwick 2014
  * ------------------------------------------------------
- * Version 1.0.0
+ * Version 1.0.1
  */
 using System;
 using System.Dynamic;
@@ -14,6 +14,7 @@ namespace DebugOS
     /// Allows the session properties to be accessed dynamically as members
     /// rather than through the indexer. 
     /// </summary>
+    [Obsolete]
     internal class DynamicSessionProperties : DynamicMetaObject
     {
         private PropertyInfo indexer;

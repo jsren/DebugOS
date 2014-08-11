@@ -1,10 +1,13 @@
 ﻿/* BochsExtension.cs - (c) James S Renwick 2014
  * --------------------------------------------
- * Version 1.3.2
+ * Version 1.4.0
  */
 using System;
-using DebugOS.Bochs;
+using System.IO;
 using System.Windows.Forms;
+
+using DebugOS.Bochs;
+
 
 namespace DebugOS.Extensions
 {
@@ -16,12 +19,11 @@ namespace DebugOS.Extensions
         private string configPath;
         private string bochsPath;
 
-
         /// <summary>Gets the name of the extension.</summary>
         public string Name { get { return "Bochs Debugger"; } }
 
         /// <summary>Gets the name of the debugger.</summary>
-        public string DebuggerName { get { return "Bochs Internal Debugger"; } }
+        string IDebuggerExtension.Name { get { return "Bochs Internal Debugger"; } }
 
         /// <summary>
         /// Performs extension initialisation.
@@ -86,6 +88,7 @@ namespace DebugOS.Extensions
                     throw new Exception("Bochs installation path not specified.");
                 }
             }
+            Environment.SetEnvironmentVariable("BOCHSHOME", Path.GetDirectoryName(bochsPath));
 
             Application.Session.Properties["BochsDebugger.ConfigPath"] = configPath;
             Application.Session.Properties["BochsDebugger.BochsPath"]  = bochsPath;
@@ -115,5 +118,7 @@ namespace DebugOS.Extensions
                 else return null;
             }
         }
+
+        
     }
 }

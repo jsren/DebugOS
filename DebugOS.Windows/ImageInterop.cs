@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace DebugOS.Windows
@@ -14,6 +11,9 @@ namespace DebugOS.Windows
     {
         public static BitmapSource ConvertImage(Bitmap bitmap)
         {
+            if (bitmap == null) 
+                throw new ArgumentNullException("bitmap");
+
             using (MemoryStream bitmapStream = new MemoryStream())
             {
                 bitmap.Save(bitmapStream, ImageFormat.Png);
@@ -35,6 +35,9 @@ namespace DebugOS.Windows
 
         public static Bitmap ConvertImage(BitmapSource source)
         {
+            if (source == null)
+                throw new ArgumentNullException("source");
+
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(source));
             

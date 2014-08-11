@@ -12,17 +12,26 @@ namespace DebugOS.Extensions
 	/// </summary>
 	public partial class AssemblyExplorer : Window
 	{
-		public AssemblyExplorer()
+        public AssemblyExplorer()
 		{
 			this.InitializeComponent();
 
-            if (Application.Debugger != null)
+            this.RefreshItems();
+		}
+
+        private void RefreshItems()
+        {
+            this.assemblyList.Items.Clear();
+
+            // Add current images to UI
+            if (Application.Session != null)
             {
-                foreach (ObjectCodeFile assembly in Application.Debugger.IncludedObjectFiles) {
+                foreach (ObjectCodeFile assembly in Application.Session.LoadedImages)
+                {
                     this.AddAssemblyItem(assembly);
                 }
             }
-		}
+        }
 
 		private void OnLoadModule(object sender, System.Windows.RoutedEventArgs e)
 		{
@@ -42,12 +51,20 @@ namespace DebugOS.Extensions
             {
                 foreach (string modulePath in dialog.FileNames)
                 {
-                    ObjectCodeFile file = this.TryLoadModule(modulePath);
+                    try
+                    {
+                        Loader.LoadImage(modulePath, null);
+                    }
+                    catch (Exception x)
+                    {
+                        var msg = String.Format("An error occured and the module '{0}' "
+                            + "has not been loaded:\n{1}", modulePath, x.ToString());
 
-                    if (file != null) {
-                        this.AddAssemblyItem(file);
+                        MessageBox.Show(msg, "Error Loading Module", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
                     }
                 }
+                this.RefreshItems();
             }
 		}
 
@@ -61,7 +78,7 @@ namespace DebugOS.Extensions
 
 		private void OnOkay(object sender, System.Windows.RoutedEventArgs e)
 		{
-            if (Application.Debugger != null)
+            if (Application.Session != null)
             {
                 var assemblies = new List<ObjectCodeFile>();
 
@@ -75,17 +92,15 @@ namespace DebugOS.Extensions
                     long @base = (long)Utils.ParseHex64(asmCtrl.baseText.Text);
                     asmCtrl.Assembly.ActualLoadAddress = @base;
 
-                    // Add if not already present
-                    if (!Application.Debugger.IncludedObjectFiles.Contains(asmCtrl.Assembly)) {
-                        Application.Debugger.IncludeObjectFile(asmCtrl.Assembly);
-                    }
                     assemblies.Add(asmCtrl.Assembly);
                 }
+
                 // Remove assemblies as necessary
-                foreach (ObjectCodeFile assembly in Application.Debugger.IncludedObjectFiles)
+                foreach (ObjectCodeFile assembly in Application.Session.LoadedImages)
                 {
-                    if (!assemblies.Contains(assembly)) {
-                        Application.Debugger.ExcludeObjectFile(assembly);
+                    if (!assemblies.Contains(assembly))
+                    {
+                        Application.Session.RemoveImage(assembly);
                     }
                 }
 
@@ -103,13 +118,18 @@ namespace DebugOS.Extensions
                     }
                     Application.Session.Properties["DebugOS.LoadedAssemblies"] = builder.ToString();
                 }
+
+                this.DialogResult = true;
             }
             else
             {
-                MessageBox.Show("Loaded assemblies cannot be altered while no debugger is selected.\n"
-                    + "Please configure a debugger and try again." );
+                MessageBox.Show("No session is currently active. \n"
+                    + "A new session must be started before changes can be made.");
+
+                this.DialogResult = false;
             }
-            this.DialogResult = true;
+
+            // Close the dialog to finish
             this.Close();
 		}
 
@@ -122,29 +142,8 @@ namespace DebugOS.Extensions
 
         private void AddAssemblyItem(ObjectCodeFile assembly)
         {
-            // Check if the assembly is the primary executable
-            bool isExecImg = Application.Session != null && 
-                Application.Session.ImageFilepath == assembly.Filepath;
-
             // Add the new item
-            this.assemblyList.Items.Add(new LoadedAssemblyItem(assembly, isExecImg ? "Primary Executable" : "Module"));
-        }
-
-        private ObjectCodeFile TryLoadModule(string path)
-        {
-            ObjectCodeFile output = null;
-            try 
-            {
-                output = Loaders.ObjectFileLoader.Load(path, AssemblySyntax.Intel);
-            }
-            catch (Exception e)
-            {
-                string msg = String.Format("An error occurred while loading an object file. " +
-                    "\n('{0}' while loading {1})", e, path);
-
-                MessageBox.Show(msg, "Error Loading Assembly", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            return output;
+            this.assemblyList.Items.Add(new LoadedAssemblyItem(assembly, "Module"));
         }
 	}
 }

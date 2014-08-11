@@ -6,7 +6,7 @@ namespace DebugOS
     /// <summary>
     /// An object representing a set of instructions - generally a function.
     /// </summary>
-    public class CodeUnit
+    public class CodeUnit : IDebugResource
     {
         /// <summary>The size in bytes of the code unit.</summary>
         public virtual long Size { get; private set; }
@@ -24,20 +24,20 @@ namespace DebugOS
         /// <summary>
         /// Creates a code unit object.
         /// </summary>
-        /// <param name="Offset">The size in bytes of the code unit.</param>
-        /// <param name="Name">The offset within the object file at which the unit is present.</param>
-        /// <param name="Symbol">The symbol by which the unit is referred.</param>
-        /// <param name="Path">The path to the source file which defines this unit.</param>
-        /// <param name="Lines">The unit's code.</param>
-        public CodeUnit(long Offset, String Name, String Symbol, String Path, CodeLine[] Lines)
+        /// <param name="offset">The size in bytes of the code unit.</param>
+        /// <param name="name">The offset within the object file at which the unit is present.</param>
+        /// <param name="symbol">The symbol by which the unit is referred.</param>
+        /// <param name="path">The path to the source file which defines this unit.</param>
+        /// <param name="lines">The unit's code.</param>
+        public CodeUnit(long offset, String name, String symbol, String path, CodeLine[] lines)
         {
-            this.Offset = Offset;
-            this.Name   = Name;
-            this.Symbol = Symbol;
-            this.Lines  = Lines;
+            this.Offset = offset;
+            this.Name   = name;
+            this.Symbol = symbol;
+            this.Lines  = lines;
             this.Size   = this.Lines.Sum(line => (long)line.Size);
 
-            this.SourceFilepath = Path;
+            this.SourceFilepath = Utils.GetPlatformPath(path);
         }
         protected CodeUnit() { }
 

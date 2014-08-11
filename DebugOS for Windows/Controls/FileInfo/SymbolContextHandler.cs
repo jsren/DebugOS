@@ -10,8 +10,7 @@ namespace DebugOS
 
         public IEnumerable<UIElement> GetContextualUI(string content, UIElement source)
         {
-            if (content == null || Application.Debugger == null ||
-                Application.Debugger.CurrentObjectFile == null)
+            if (content == null || Application.Debugger == null)
             {
                 yield break;
             }
@@ -21,11 +20,18 @@ namespace DebugOS
 
             foreach (Match match in matches)
             {
-                SymbolEntry sym = Application.Debugger.CurrentObjectFile.SymbolTable.GetSymbol(
-                    match.Groups[1].Value);
+                SymbolEntry sym  = null;
+                CodeUnit    unit = null;
 
-                if (sym == null) continue;
-                else yield return new SymbolContextItem(sym);
+                foreach (ObjectCodeFile file in Application.Session.LoadedImages)
+                {
+                    if ((sym = file.SymbolTable.GetSymbol(match.Groups[1].Value)) != null)
+                    {
+                        unit = file.GetCode(sym.Name);
+                        break;
+                    }
+                }
+                if (sym != null) yield return new SymbolContextItem(unit, sym);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿/* CodeUnitLoader.cs - (c) James S Renwick 2014
  * -----------------------------------------------
- * Version 1.2.0
+ * Version 1.2.1
  * 
  * This code file contains the logic for parsing and loading
  * code units of an object file from the output produced by objdump.
@@ -16,9 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DebugOS.Loaders
+namespace DebugOS.Loaders.Objdump
 {
-    public static class CodeUnitLoader
+    public class CodeUnitLoader
     {
         // Regex for locating the start of a unit
         static readonly Regex UnitStartRegex

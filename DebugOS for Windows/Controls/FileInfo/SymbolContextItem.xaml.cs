@@ -17,11 +17,11 @@ namespace DebugOS
 		}
 #endif
 
-        public SymbolContextItem(SymbolEntry symbol)
+        public SymbolContextItem(CodeUnit unit, SymbolEntry symbol)
         {
             this.InitializeComponent();
 
-            this.unit            = Application.Debugger.CurrentObjectFile.GetCode(symbol.Name);
+            this.unit            = unit;
             this.symbol          = symbol;
             this.symbolText.Text = symbol.Name;
 
@@ -46,14 +46,17 @@ namespace DebugOS
 
         private void OnViewSrcClick(object sender, MouseButtonEventArgs e)
         {
-            CodeViewer.OpenCodeView(this.unit);
+            if (System.IO.File.Exists(unit.SourceFilepath))
+            {
+                CodeViewer.OpenCodeView(unit.SourceFilepath);
+            }
         }
 
         private void OnBreakpointClick(object sender, MouseButtonEventArgs e)
         {
             if (this.breakpoint == null)
             {
-               this.breakpoint = Application.Debugger.SetBreakpoint(this.symbol.Value);
+                this.breakpoint = Application.Debugger.SetBreakpoint(this.symbol.Value);
             }
             else
             {
@@ -61,6 +64,11 @@ namespace DebugOS
                 this.breakpoint = null;
             }
             this.UpdateBPText();
+        }
+
+        private void OnViewAsmClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            CodeViewer.OpenCodeView(this.unit);
         }
 	}
 }

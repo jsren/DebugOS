@@ -53,13 +53,14 @@
     <Compile Include="Bochs\BochsRegSet.cs" />
     <Compile Include="Bochs\IBochsRequest.cs" />
     <Compile Include="Bochs\Requests\ReadMemoryRequest.cs" />
+    <Compile Include="Extensions\QemuExtension.cs" />
     <Compile Include="Extensions\SessionExtension.cs" />
     <Compile Include="GDB\Formats\arm11.cs" />
     <Compile Include="GDB\Formats\i386.cs" />
     <Compile Include="GDB\GDBDebugger.cs" />
     <Compile Include="GDB\Requests\ReadRegistersRequest.cs" />
     <Compile Include="GDB\Requests\Request.cs" />
-    <Compile Include="Helper.cs" />
+    <Compile Include="ExMethods.cs" />
     <Compile Include="ELF\ELFBinary.cs" />
     <Compile Include="ELF\ElfHeader.cs" />
     <Compile Include="ELF\ABI.cs" />
@@ -73,8 +74,6 @@
     <Compile Include="ELF\SegmentType.cs" />
     <Compile Include="Exceptions\DebuggerNotPausedException.cs" />
     <Compile Include="Exceptions\IncompatibleObjectException.cs" />
-    <Compile Include="Extension.cs" />
-    <Compile Include="ExtensionLoader.cs" />
     <Compile Include="Extensions\BochsExtension.cs" />
     <Compile Include="Extensions\BreakpointExtension.cs" />
     <Compile Include="Extensions\ExecutionExtension.cs" />

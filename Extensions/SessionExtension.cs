@@ -34,10 +34,10 @@ namespace DebugOS.Extensions
             saveAsSessionMenu.Clicked += OnSaveAsSession;
             loadSessionMenu.Clicked   += OnLoadSession;
 
-            UI.AddMenuItem("Debug", newSessionMenu);
-            UI.AddMenuItem("Debug", saveSessionMenu);
-            UI.AddMenuItem("Debug", saveAsSessionMenu);
-            UI.AddMenuItem("Debug", loadSessionMenu);
+            UI.AddMenuItem(newSessionMenu, "Debug");
+            UI.AddMenuItem(saveSessionMenu, "Debug");
+            UI.AddMenuItem(saveAsSessionMenu, "Debug");
+            UI.AddMenuItem(loadSessionMenu, "Debug");
         }
 
         void OnNewSession(object sender)
@@ -126,7 +126,7 @@ namespace DebugOS.Extensions
                 {
                     try
                     {
-                        Application.Session = DebugSession.Load(dialog.FileName);
+                        Loader.LoadSession(dialog.FileName);
                     }
                     catch (Exception e)
                     {

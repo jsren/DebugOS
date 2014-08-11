@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using Microsoft.Win32;
 
 namespace DebugOS.Extensions
@@ -27,13 +24,15 @@ namespace DebugOS.Extensions
                 return;
             }
 
+            // Look for registry entries
             var programs = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node");
 
-            var bochsKeys = from key in programs.GetSubKeyNames() 
-                            where key.StartsWith("Bochs ") 
-                            select programs.OpenSubKey(key);
+            var bochsKeys = from    key in programs.GetSubKeyNames() 
+                            where   key.StartsWith("Bochs ") 
+                            orderby key descending
+                            select  programs.OpenSubKey(key);
 
-            foreach (RegistryKey key in bochsKeys.Reverse())
+            foreach (RegistryKey key in bochsKeys)
             {
                 string path = key.GetValue(null) as string;
 

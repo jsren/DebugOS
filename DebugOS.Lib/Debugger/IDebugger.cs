@@ -1,6 +1,6 @@
 ﻿/* IDebugger.cs - (c) James S Renwick 2013-2014 
  * --------------------------------------------
- * Version 1.6.0
+ * Version 1.7.0
  */
 using System;
 using System.Collections.Generic;
@@ -56,10 +56,6 @@ namespace DebugOS
         /// </summary>
         DebugStatus CurrentStatus { get; }
         /// <summary>
-        /// Gets an array of the loaded object files.
-        /// </summary>
-        ObjectCodeFile[] IncludedObjectFiles { get; }
-        /// <summary>
         /// Gets the set of available registers as specified by the current architecture.
         /// Allows querying accessibility for each register.
         /// </summary>
@@ -109,18 +105,6 @@ namespace DebugOS
         /// Forcibly ceases debugging and disconnects the debugger.
         /// </summary>
         void Disconnect();
-        /// <summary>
-        /// Removes the code and symbols of the given <see cref="ObjectCodeFile"/>
-        /// from the debugger.
-        /// </summary>
-        /// <param name="file">The <see cref="ObjectCodeFile"/> to remove.</param>
-        void ExcludeObjectFile(ObjectCodeFile file);
-        /// <summary>
-        /// Includes the code and symbols of the given <see cref="ObjectCodeFile"/>
-        /// in the debugger.
-        /// </summary>
-        /// <param name="file">The <see cref="ObjectCodeFile"/> to include.</param>
-        void IncludeObjectFile(ObjectCodeFile file);
         /// <summary>
         /// Attempts to read the contents of a debuggee register.
         /// </summary>

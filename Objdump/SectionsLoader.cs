@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
-namespace DebugOS
+namespace DebugOS.Loaders.Objdump
 {
     public static class SectionsLoader
     {

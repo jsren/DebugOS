@@ -42,7 +42,13 @@
     <Compile Include="Architectures\Architecture.cs" />
     <Compile Include="Architectures\ByteOrder.cs" />
     <Compile Include="Architectures\StackDirection.cs" />
-    <Compile Include="ArgumentSet.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="UI\ISearchCategory.cs" />
+    <Compile Include="UI\Objects\UIHandle.cs" />
+    <Compile Include="Util\Internal.cs" />
+    <Compile Include="Util\ExtensionLoader.cs" />
+    <Compile Include="Util\ArgumentSet.cs" />
     <Compile Include="Code\AssemblyLine.cs" />
     <Compile Include="Code\AssemblySyntax.cs" />
     <Compile Include="Code\CodeLine.cs" />
@@ -52,6 +58,7 @@
     <Compile Include="Code\SymbolEntry.cs" />
     <Compile Include="Code\SymbolFlags.cs" />
     <Compile Include="Code\SymbolTable.cs" />
+    <Compile Include="Debugger\DebugResource.cs" />
     <Compile Include="Debugger\EventArgs\BreakpointSetEventArgs.cs" />
     <Compile Include="Debugger\EventArgs\MemoryReadEventArgs.cs" />
     <Compile Include="Debugger\Objects\BreakpointCollection.cs" />
@@ -64,11 +71,14 @@
     <Compile Include="Debugger\Objects\RegisterType.cs" />
     <Compile Include="Debugger\Objects\Register.cs" />
     <Compile Include="DebugSession.cs" />
-    <Compile Include="DynamicSessionProperties.cs" />
-    <Compile Include="PathComparer.cs" />
+    <Compile Include="Util\DynamicSessionProperties.cs" />
+    <Compile Include="Util\IFreezable.cs" />
+    <Compile Include="Exceptions\ObjectFrozenException.cs" />
+    <Compile Include="Util\ImageLoadedEventArgs.cs" />
+    <Compile Include="Util\PathComparer.cs" />
     <Compile Include="SessionMetrics.cs" />
     <Compile Include="SessionProperties.cs" />
-    <Compile Include="UI\GUIType.cs" />
+    <Compile Include="UI\Objects\GUIType.cs" />
     <Compile Include="UI\IMainPanel.cs" />
     <Compile Include="UI\IMenuItem.cs" />
     <Compile Include="UI\IToolbarItem.cs" />
@@ -80,7 +90,7 @@
     <Compile Include="IExtension.cs" />
     <Compile Include="UI\Objects\PanelLocation.cs" />
     <Compile Include="UI\Objects\PanelSide.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Util\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Debugger\Objects\RegisterSet.cs" />

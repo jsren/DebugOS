@@ -48,10 +48,10 @@ namespace DebugOS
 
                 switch (suffix)
                 {
-                    case 'b': multiplier = 0x1; break;
-                    case 'B': multiplier = 0x8; break;
-                    case 'k': multiplier = 0x400; break;
-                    case 'K': multiplier = 0x2000; break;
+                    case 'b': multiplier = 0x1;      break;
+                    case 'B': multiplier = 0x8;      break;
+                    case 'k': multiplier = 0x400;    break;
+                    case 'K': multiplier = 0x2000;   break;
                     case 'm': multiplier = 0x100000; break;
                     case 'M': multiplier = 0x800000; break;
                     default: throw new InvalidDataException("Bad size suffix: '" + suffix + "'");
